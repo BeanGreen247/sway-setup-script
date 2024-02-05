@@ -13,8 +13,9 @@ sudo apt install -y libc6:amd64 libc6:i386 libegl1:amd64 libegl1:i386 libgbm1:am
 mkdir -p /home/$user/.fonts
 rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-desktop*.zip
 wget https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-desktop.zip ## figure out how to get latest version
-unzip ontawesome-free-*-desktop.zip
-mv /home/$user/fontawesome-free-*-desktop/otfs /usr/local/share/fonts/
+unzip fontawesome-free-*-desktop.zip
+cp -r /home/$user/fontawesome-free-*-desktop/otfs /usr/local/share/fonts/
+mv /home/$user/fontawesome-free-*-desktop/otfs/*.otf /home/$user/.fonts/
 rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-desktop*.zip
 sudo apt clean
 echo "make sure to run 'fc-cache -f -v' after install script has finished"
