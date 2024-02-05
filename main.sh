@@ -18,4 +18,12 @@ cp -r /home/$user/fontawesome-free-*-desktop/otfs /usr/local/share/fonts/
 mv /home/$user/fontawesome-free-*-desktop/otfs/*.otf /home/$user/.fonts/
 rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-desktop*.zip
 sudo apt clean
+mkdir -p /home/$user/.config/waybar
+cd .config/waybar/
+# waybar config need to look up how to configure
+#wget https://raw.githubusercontent.com/-some-null-/config/master/.config/waybar/config
+#wget https://raw.githubusercontent.com/-some-null-/config/master/.config/waybar/style.css
+#bean@t430:~$ nano .config/waybar/config 
+#bean@t430:~$ nano .config/waybar/style.css
+#
 echo "make sure to run 'fc-cache -f -v' after install script has finished"
