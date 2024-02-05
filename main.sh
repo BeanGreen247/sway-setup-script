@@ -15,4 +15,6 @@ rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-de
 wget https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-desktop.zip ## figure out how to get latest version
 unzip ontawesome-free-*-desktop.zip
 mv /home/$user/fontawesome-free-*-desktop/otfs /usr/local/share/fonts/
-fc-cache -f -v
+rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-desktop*.zip
+sudo apt clean
+echo "make sure to run 'fc-cache -f -v' after install script has finished"
