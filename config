@@ -62,6 +62,12 @@ include /etc/sway/config-vars.d/*
 
 ### Key bindings
 #
+# Custom:
+#
+
+    bindsym Print exec grim -g "$(slurp)" - | wl-copy
+
+#
 # Basics:
 #
     # Start a terminal
