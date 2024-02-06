@@ -25,7 +25,7 @@ include /etc/sway/config-vars.d/*
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+#### output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 #
 # Example configuration:
 #
@@ -219,3 +219,5 @@ bar swaybar_command waybar
 
 include /etc/sway/config.d/*
 exec pulseaudio --daemonize
+# setting wallpaper
+output * bg /home/bean/Pictures/wallpapers/Bogatyr-at-the-Crossroads-by-Viktor-Vasnetsov.png fill
