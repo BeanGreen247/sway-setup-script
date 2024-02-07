@@ -66,6 +66,7 @@ include /etc/sway/config-vars.d/*
 #
 
     bindsym Print exec grim -g "$(slurp)" - | wl-copy
+    bindsym $mod+Shift+s exec systemctl suspend
 
 #
 # Basics:
