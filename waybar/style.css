@@ -1,23 +1,35 @@
+@define-color waybar-back #40382a;
+@define-color waybar-fore #8c7c5d;
+@define-color date-back #bfa380;
+@define-color date-fore #f2e0d5;
+@define-color other-back #272318;
+@define-color other-fore #d9ccd9;
+
 * {
 	font-size: 12px;
-	font-family: monospace;
 }
 
 window#waybar {
-	background: #292b2e;
-	color: #fdf6e3;
+	background: @waybar-back;
+	color: @waybar-fore;
+}
+
+#clock.1,
+#clock.2,
+#clock.3{
+        background: @date-back;
+        color: @waybar-back;
+	font-family: "dseg 14 classic";
 }
 
 #workspaces,
-#clock.1,
-#clock.2,
-#clock.3,
 #pulseaudio,
 #memory,
 #cpu,
 #battery,
 #tray {
-	background: #1a1a1a;
+	background: @other-back;
+	font-family: "Font Awesome 6 Free";
 }
 
 #workspaces button {
@@ -37,17 +49,12 @@ window#waybar {
 	padding: 0 3px;
 }
 
-#pulseaudio {
-	color: #268bd2;
-}
-#memory {
-	color: #2aa198;
-}
-#cpu {
-	color: #6c71c4;
-}
+#pulseaudio,
+#memory,
+#cpu,
 #battery {
-	color: #859900;
+	color: @other-fore;
+	background: @other-back;
 }
 
 #clock,
