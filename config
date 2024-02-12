@@ -18,7 +18,9 @@ set $term foot
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
-set $menu dmenu_path | dmenu | xargs swaymsg exec --
+# original
+#set $menu dmenu_path | dmenu | xargs swaymsg exec --
+set $menu dmenu_path | dmenu -b -i -nb "#40382a" -nf "#d9ccd9" -sb "#bfa380" -sf "#000000" | xargs swaymsg exec --
 
 include /etc/sway/config-vars.d/*
 
@@ -204,6 +206,14 @@ mode "resize" {
     bindsym Escape mode "default"
 }
 bindsym $mod+r mode "resize"
+
+### Window borders
+# Property Name             Border  BG      Text    Indicator Child-border
+client.focused              #000000 #bfa380 #40382a #bfa380   #000000
+client.focused_inactive     #000000 #bfa380 #40382a #bfa380   #000000
+client.unfocused            #000000 #40382a #bfa380 #40382a   #000000
+client.urgent               #000000 #bfa380 #40382a #bfa380   #000000
+client.placeholder          #000000 #bfa380 #40382a #bfa380   #000000
 
 #
 # Status Bar:
