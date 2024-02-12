@@ -34,10 +34,10 @@ window#waybar {
 
 #workspaces button {
 	padding: 0 2px;
-	color: #fdf6e3;
+	color: #000000;
 }
 #workspaces button.focused {
-	color: #268bd2;
+	color: #ffffff;
 }
 #workspaces button:hover {
 	box-shadow: inherit;
