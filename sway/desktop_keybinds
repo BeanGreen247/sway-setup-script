@@ -1,0 +1,11 @@
+# used package 'wev' to get the keycodes for used keys
+# volume controls
+bindsym $mod+Shift+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+# PgUp
+bindsym --release $mod+Prior exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+# PgDown
+bindsym --release $mod+Next exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+
+# brightness controls
+bindsym $mod+Shift+i exec brightnessctl -q set +5%
+bindsym $mod+Shift+d exec brightnessctl -q set 5%-
