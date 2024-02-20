@@ -237,5 +237,6 @@ bar swaybar_command waybar
 
 include /etc/sway/config.d/*
 exec pulseaudio --daemonize
+exec swaync
 # setting wallpaper
 output * bg /home/bean/Pictures/wallpapers/Bogatyr-at-the-Crossroads-by-Viktor-Vasnetsov.png fill

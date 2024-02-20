@@ -27,6 +27,7 @@ window#waybar {
 #memory,
 #cpu,
 #battery,
+#custom-notification,
 #tray {
 	background: @other-back;
 	font-family: "Font Awesome 6 Free";
