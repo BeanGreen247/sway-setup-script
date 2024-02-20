@@ -33,4 +33,6 @@ wget -O /home/$user/.config/sway/desktop_keybinds https://raw.githubusercontent.
 wget -O /home/$user/.config/sway/laptop_keybinds https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/laptop_keybinds
 mkdir -p /home/$user/.config/swaync
 wget -O /home/$user/.config/swaync/config.json https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/swaync/config.json
+mkdir -p /home/$user/.config/foot
+wget -O /home/$user/.config/foot/foot.ini https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/foot/foot.ini
 echo "make sure to run 'fc-cache -f -v' after install script has finished"
