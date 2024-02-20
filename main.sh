@@ -22,13 +22,15 @@ mv /home/$user/fontawesome-free-*-desktop/otfs/*.otf /home/$user/.fonts/
 rm -rf /home/$user/fontawesome-free-*-desktop* /home/$user/fontawesome-free-*-desktop*.zip
 sudo apt clean
 mkdir -p /home/$user/.config/waybar
-cd .config/waybar/
+cd /home/$user/.config/waybar/
 wget -O /home/$user/.config/waybar/config https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/waybar/config
 wget -O /home/$user/.config/waybar/style.css https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/waybar/style.css
 mkdir -p /home/$user/.config/sway/
-cd .config/sway/
+cd /home/$user/.config/sway/
 wget -O /home/$user/.config/sway/config https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/config
 wget -O /home/$user/.config/sway/general_keybinds https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/general_keybinds
 wget -O /home/$user/.config/sway/desktop_keybinds https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/desktop_keybinds
 wget -O /home/$user/.config/sway/laptop_keybinds https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/laptop_keybinds
+mkdir -p /home/$user/.config/swaync
+wget -O /home/$user/.config/swaync/config.json https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/swaync/config.json
 echo "make sure to run 'fc-cache -f -v' after install script has finished"
