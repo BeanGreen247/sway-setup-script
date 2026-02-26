@@ -1,0 +1,284 @@
+/* ════════════════════════════════════════════════════════════
+ *  MIDNIGHT GLASS  ·  Modern Waybar Theme
+ *  Floating pill bar · Deep glass layers · Accent highlights
+ * ════════════════════════════════════════════════════════════ */
+
+/* ── BASE ─────────────────────────────────────────────────── */
+* {
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #dce8f5;
+}
+
+/* ── TOP-LEVEL WINDOW ─────────────────────────────────────── */
+/*  Fully transparent — each pill paints its own background   */
+window#waybar {
+  background: transparent;
+}
+
+/* ── MODULE ZONES ─────────────────────────────────────────── */
+/*  Every zone is a floating glass pill                        */
+
+.modules-left {
+  background: rgba(12, 18, 34, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  margin-left: 0px;
+  padding: 0 4px;
+}
+
+.modules-center {
+  background: rgba(12, 18, 34, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 0 6px;
+}
+
+.modules-right {
+  background: rgba(12, 18, 34, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  margin-right: 0px;
+  padding: 0 4px;
+}
+
+/* ── WORKSPACES ───────────────────────────────────────────── */
+#workspaces {
+  padding: 0 4px;
+}
+
+#workspaces button {
+  color: rgba(220, 232, 245, 0.40);
+  background: transparent;
+  padding: 0 7px;
+  margin: 4px 2px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 22px;
+  transition: all 120ms ease;
+}
+
+#workspaces button:hover {
+  color: rgba(220, 232, 245, 0.75);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Active — bright accent chip */
+#workspaces button.focused {
+  color: #0c1222;
+  background: #58a6ff;
+  border-radius: 8px;
+  margin: 5px 3px;
+  padding: 0 8px;
+  font-weight: 800;
+}
+
+#workspaces button.urgent {
+  color: #fff;
+  background: rgba(255, 80, 80, 0.75);
+  border-radius: 8px;
+}
+
+/* ── ACTIVE WINDOW TITLE ──────────────────────────────────── */
+#window {
+  color: rgba(220, 232, 245, 0.55);
+  font-size: 12px;
+  padding: 0 10px;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── SWAY MODE ────────────────────────────────────────────── */
+#mode {
+  background: rgba(88, 166, 255, 0.20);
+  color: #58a6ff;
+  border: 1px solid rgba(88, 166, 255, 0.35);
+  border-radius: 10px;
+  font-weight: 700;
+  padding: 0 10px;
+  margin: 4px 4px;
+}
+
+/* ── CLOCK ────────────────────────────────────────────────── */
+#clock {
+  color: #dce8f5;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 0 6px;
+  letter-spacing: 0.3px;
+}
+
+/* Day label — dimmed */
+#clock.day {
+  color: rgba(220, 232, 245, 0.50);
+  font-weight: 400;
+  font-size: 12px;
+  padding-right: 2px;
+}
+
+/* Date — medium emphasis */
+#clock.date {
+  color: rgba(220, 232, 245, 0.75);
+  font-weight: 500;
+  font-size: 12.5px;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 0 10px;
+  margin: 4px 2px;
+}
+
+/* Time — full brightness + mono weight */
+#clock.time {
+  color: #dce8f5;
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 1px;
+  padding-left: 2px;
+}
+
+/* ── CPU ──────────────────────────────────────────────────── */
+#cpu {
+  color: #58a6ff;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+#cpu.high {
+  color: #ff9944;
+}
+
+/* ── MEMORY ───────────────────────────────────────────────── */
+#memory {
+  color: #79c0ff;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+/* ── DISK ─────────────────────────────────────────────────── */
+#disk {
+  color: #a5d6ff;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+/* ── TEMPERATURE ──────────────────────────────────────────── */
+#temperature {
+  color: #56d364;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+#temperature.critical {
+  color: #ff5555;
+  font-weight: 700;
+  animation: blink 1s linear infinite;
+}
+
+@keyframes blink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* ── PULSEAUDIO ───────────────────────────────────────────── */
+#pulseaudio {
+  color: #c792ea;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+#pulseaudio.muted {
+  color: rgba(220, 232, 245, 0.30);
+}
+
+/* ── NETWORK ──────────────────────────────────────────────── */
+#network {
+  color: #56d364;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+#network.disconnected {
+  color: rgba(255, 85, 85, 0.75);
+}
+
+#network.wifi {
+  color: #56d364;
+}
+
+#network.ethernet {
+  color: #79c0ff;
+}
+
+/* ── BATTERY ──────────────────────────────────────────────── */
+#battery {
+  color: #3fb950;
+  font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+  font-weight: 900;
+  padding: 0 6px;
+}
+
+#battery.charging {
+  color: #58a6ff;
+}
+
+#battery.plugged {
+  color: #79c0ff;
+}
+
+#battery.warning:not(.charging) {
+  color: #e3b341;
+}
+
+#battery.critical:not(.charging) {
+  color: #ff5555;
+  font-weight: 700;
+  animation: blink 1s linear infinite;
+}
+
+/* ── TRAY ─────────────────────────────────────────────────── */
+#tray {
+  padding: 0 6px;
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+  background-color: rgba(255, 85, 85, 0.15);
+  border-radius: 6px;
+}
+
+/* ── SEPARATOR ────────────────────────────────────────────── */
+#custom-separator-dot {
+  color: rgba(220, 232, 245, 0.18);
+  font-size: 14px;
+  padding: 0 3px;
+}
+
+/* ── TOOLTIPS ─────────────────────────────────────────────── */
+tooltip {
+  background: rgba(10, 14, 26, 0.96);
+  border: 1px solid rgba(88, 166, 255, 0.20);
+  border-radius: 10px;
+  padding: 4px 2px;
+}
+
+tooltip label {
+  color: #dce8f5;
+  font-size: 12px;
+  padding: 2px 6px;
+}
