@@ -19,7 +19,7 @@ A complete, minimal Wayland/Sway installation focused on performance and efficie
 Three Python GTK3 apps are included in `~/.local/bin/`, all styled with the midnight dark theme:
 
 - **`sway-welcome`** — Welcome screen shown on first login. Lists key keybindings, links to GitHub and sponsor page, and has a "Don't show again" checkbox. Run with `--force` to show it at any time.
-- **`sway-power`** — Power menu (`$mod+Shift+p` or waybar ⏻ button). Sleep requires no password. Reboot and Shutdown prompt for sudo password.
+- **`sway-power`** — Power menu (`$mod+Shift+p` or waybar ⏻ button). All three actions (Sleep, Reboot, Shutdown) call `systemctl` directly — no password needed as logind grants active session users these rights.
 - **`cal-popup`** — GTK calendar popup launched by clicking the waybar clock. Closes on focus-out or Escape. Wrapped by `cal-toggle` which prevents duplicate windows.
 
 ### System Tools
