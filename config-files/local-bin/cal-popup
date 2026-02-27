@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+"""cal-popup — midnight-themed calendar popup for waybar."""
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GLib
+
+CSS = b"""
+window {
+    background-color: #0c1222;
+    border: 1px solid rgba(42,90,138,0.65);
+    border-radius: 10px;
+    padding: 6px;
+}
+calendar {
+    background-color: #0c1222;
+    color: #dce8f5;
+    font-family: "DejaVu Sans Mono";
+    font-size: 11pt;
+    border: none;
+    outline: none;
+}
+calendar:selected {
+    background-color: #2a5a8a;
+    color: #ffffff;
+    border-radius: 4px;
+}
+"""
+
+
+class CalWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
+        self.set_title("")
+        self.set_decorated(False)
+        self.set_skip_taskbar_hint(True)
+        self.set_skip_pager_hint(True)
+        self.set_keep_above(True)
+        self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
+        self.set_resizable(False)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        self.cal = Gtk.Calendar()
+        self.add(self.cal)
+
+        self.connect("focus-out-event", self._on_focus_out)
+        self.connect("key-press-event", self._on_key)
+
+    def _on_focus_out(self, _widget, _event):
+        GLib.timeout_add(150, self._check_quit)
+        return False
+
+    def _check_quit(self):
+        if not self.is_active():
+            Gtk.main_quit()
+        return False
+
+    def _on_key(self, _widget, event):
+        if event.keyval == Gdk.KEY_Escape:
+            Gtk.main_quit()
+
+
+def _pointer_position():
+    display = Gdk.Display.get_default()
+    seat = display.get_default_seat()
+    _, x, y = seat.get_pointer().get_position()
+    return x, y
+
+
+win = CalWindow()
+win.show_all()
+win.realize()
+
+mx, my = _pointer_position()
+ww, wh = win.get_size()
+screen = Gdk.Screen.get_default()
+sw, sh = screen.get_width(), screen.get_height()
+px = min(mx, sw - ww - 8)
+py = min(my, sh - wh - 8)
+win.move(px, py)
+win.present()
+win.grab_focus()
+
+Gtk.main()

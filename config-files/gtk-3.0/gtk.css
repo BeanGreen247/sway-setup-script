@@ -1,0 +1,7 @@
+
+/* GtkCalendar midnight theme */
+calendar { background-color: #0c1222; color: #dce8f5; }
+calendar header { background-color: #0a1628; color: #79c0ff; font-weight: bold; }
+calendar button { background-color: transparent; color: #58a6ff; border: none; }
+calendar button:hover { background-color: rgba(88,166,255,0.15); }
+calendar:selected { background-color: #2a5a8a; color: #ffffff; }

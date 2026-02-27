@@ -1,0 +1,7 @@
+show_week_numbers = 0
+close_on_unfocus = 1
+main_window_decorated = 0
+main_window_keep_above = 1
+main_window_sticky = 0
+main_window_skip_taskbar = 1
+main_window_position = mouse

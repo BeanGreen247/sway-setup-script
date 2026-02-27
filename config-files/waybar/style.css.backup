@@ -1,0 +1,67 @@
+@define-color waybar-back #40382a;
+@define-color waybar-fore #8c7c5d;
+@define-color date-back #bfa380;
+@define-color date-fore #f2e0d5;
+@define-color other-back #272318;
+@define-color other-fore #d9ccd9;
+
+* {
+	font-size: 12px;
+}
+
+window#waybar {
+	background: @waybar-back;
+	color: @waybar-fore;
+}
+
+#clock.1,
+#clock.2,
+#clock.3{
+        background: @date-back;
+        color: @waybar-back;
+	font-family: "dseg 14 classic";
+}
+
+#workspaces,
+#pulseaudio,
+#memory,
+#cpu,
+#battery,
+#custom-notification,
+#tray {
+	background: @other-back;
+	font-family: "Font Awesome 6 Free";
+}
+
+#workspaces button {
+	padding: 0 2px;
+	color: #000000;
+}
+#workspaces button.focused {
+	color: #ffffff;
+}
+#workspaces button:hover {
+	box-shadow: inherit;
+	text-shadow: inherit;
+}
+#workspaces button:hover {
+	background: #1a1a1a;
+	border: #1a1a1a;
+	padding: 0 3px;
+}
+
+#pulseaudio,
+#memory,
+#cpu,
+#battery {
+	color: @other-fore;
+	background: @other-back;
+}
+
+#clock,
+#pulseaudio,
+#memory,
+#cpu,
+#battery {
+	padding: 0 10px;
+}

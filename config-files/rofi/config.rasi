@@ -1,0 +1,12 @@
+configuration {
+    modi:           "drun,run";
+    show-icons:     true;
+    icon-theme:     "Papirus";
+    drun-display-format: "{name}  <span size='small' alpha='55%'><i>({generic})</i></span>";
+    display-drun:   "";
+    display-run:    "";
+    font:           "DejaVu Sans Mono 12";
+    click-to-exit:  true;
+}
+
+@theme "midnight"

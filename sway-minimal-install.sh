@@ -51,8 +51,9 @@ echo "[2/8] Installing core Sway packages..."
 apt install -y \
     sway swaybg swayidle swaylock \
     xdg-desktop-portal-wlr xwayland \
-    waybar foot wofi wl-clipboard grim slurp \
-    sway-notification-center libnotify-bin \
+    waybar foot rofi wl-clipboard cliphist grim slurp \
+    sway-notification-center libnotify-bin wlsunset \
+    python3-gi gir1.2-gtk-3.0 gir1.2-pango-1.0 xdg-utils procps \
     \
     pipewire pipewire-pulse pipewire-alsa wireplumber pipewire-audio-client-libraries \
     \
@@ -62,30 +63,89 @@ apt install -y \
     libgl1:i386 libgl1-mesa-dri:i386 libglu1-mesa:i386 \
     \
     brightnessctl pavucontrol pulseaudio-utils pamixer lxappearance \
-    pcmanfm xarchiver p7zip-full unzip dmenu curl wget \
-    firefox-esr \
+    pcmanfm xarchiver p7zip-full unzip curl wget \
+    firefox-esr chromium \
     \
+    arc-theme papirus-icon-theme \
     fonts-font-awesome fonts-dejavu-core ttf-mscorefonts-installer \
     \
     vim git curl wget tree htop btop fastfetch \
     lm-sensors fancontrol \
+    bind9-dnsutils bind9-host usbutils pciutils dmidecode \
+    lsof traceroute netcat-traditional nftables ufw os-prober \
     \
     mate-polkit polkitd \
     \
     ca-certificates build-essential cmake gcc g++
 
-echo "[2.5] Installing brave browser"
+echo "[2.5] Installing Brave browser..."
 bash -c "curl -fsS https://dl.brave.com/install.sh | sh"
+
+# ============================================================================
+# APPLICATIONS
+# ============================================================================
+echo "[2.6] Installing applications..."
+apt install -y \
+    imv mpv vlc \
+    zathura \
+    keepassxc \
+    thunderbird \
+    transmission-gtk \
+    libreoffice \
+    inkscape \
+    gimp \
+    gnome-calculator || true
+
+# ============================================================================
+# DEVELOPMENT & CONTAINER TOOLS
+# ============================================================================
+echo "[2.7] Installing development tools..."
+apt install -y \
+    nodejs npm \
+    python3-pip python3-venv \
+    docker.io docker-compose \
+    git build-essential || true
+
+# VSCode (Microsoft repo)
+if ! command -v code &>/dev/null; then
+    echo "Installing VSCode..."
+    # Ensure required tools are present
+    apt install -y wget gpg apt-transport-https
+
+    # Import signing key with correct permissions
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
+        | gpg --dearmor > /tmp/microsoft.gpg
+    install -D -o root -g root -m 644 /tmp/microsoft.gpg \
+        /usr/share/keyrings/microsoft.gpg
+    rm -f /tmp/microsoft.gpg
+
+    # Add repo in DEB822 format (recommended by Microsoft)
+    # Remove legacy sources.list entry if present
+    rm -f /etc/apt/sources.list.d/vscode.list
+    cat > /etc/apt/sources.list.d/vscode.sources << 'EOF'
+Types: deb
+URIs: https://packages.microsoft.com/repos/code
+Suites: stable
+Components: main
+Architectures: amd64,arm64,armhf
+Signed-By: /usr/share/keyrings/microsoft.gpg
+EOF
+
+    apt update -qq
+    apt install -y code || true
+fi
 
 # Steam support libraries (multilib)
 echo "[3/8] Installing Steam/Gaming support libraries..."
 apt install -y \
     libc6:i386 libegl1:i386 libgbm1:i386 \
     steam-libs-amd64:amd64 steam-libs-i386:i386 \
-    gamemode mangohud goverlay vkbasalt || true
+    gamemode mangohud goverlay vkbasalt \
+    lutris \
+    wine || true
 
-# Optional: Install Steam (comment out if not needed)
-# apt install -y steam
+# Steam (needs i386 and non-free)
+apt install -y steam:i386 || true
 
 # ============================================================================
 # CLEANUP APT CACHE
@@ -120,45 +180,41 @@ mkdir -p "/home/$user/.fonts"
 mkdir -p "/home/$user/Pictures/Screenshots"
 
 # ============================================================================
-# DOWNLOAD SWAY CONFIGURATIONS FROM GITHUB
+# DEPLOY SWAY CONFIGURATIONS
 # ============================================================================
-echo "[7/8] Downloading Sway configurations from GitHub..."
+echo "[7/8] Deploying Sway configurations..."
 
-# Sway configs
-wget -q -O "/home/$user/.config/sway/config" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/config || \
-    echo "Warning: Could not download sway config, will create minimal one"
+# Determine where install scripts live
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+DEPLOY_SCRIPT="$SCRIPT_DIR/deploy-configs.sh"
+CONFIG_SRC="$SCRIPT_DIR/config-files"
 
-wget -q -O "/home/$user/.config/sway/general_keybinds" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/general_keybinds || true
+if [ -f "$DEPLOY_SCRIPT" ] && [ -d "$CONFIG_SRC" ]; then
+    echo "  Using local config-files/ from repo..."
+    bash "$DEPLOY_SCRIPT" "$user"
+    CONFIG_DEPLOYED=true
+else
+    echo "  Local config-files/ not found, falling back to GitHub download..."
+    CONFIG_DEPLOYED=false
+    # Waybar configs (available at repo root)
+    wget -q -O "/home/$user/.config/waybar/config" \
+        https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/refs/heads/main/waybar-config-v2.json \
+        && echo "  Downloaded waybar config" \
+        || echo "  Warning: Could not download waybar config, will use fallback"
+    wget -q -O "/home/$user/.config/waybar/style.css" \
+        https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/refs/heads/main/waybar-style-v2.css \
+        && echo "  Downloaded waybar style" \
+        || echo "  Warning: Could not download waybar style, will use fallback"
+fi
 
-wget -q -O "/home/$user/.config/sway/desktop_keybinds" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/desktop_keybinds || true
-
-wget -q -O "/home/$user/.config/sway/laptop_keybinds" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sway/laptop_keybinds || true
-
-# Waybar configs
-wget -q -O "/home/$user/.config/waybar/config" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/waybar/config || \
-    echo "Warning: Could not download waybar config"
-
-wget -q -O "/home/$user/.config/waybar/style.css" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/waybar/style.css || \
-    echo "Warning: Could not download waybar style"
-
-# Foot terminal
-wget -q -O "/home/$user/.config/foot/foot.ini" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/foot/foot.ini || \
-    echo "Warning: Could not download foot config"
-
-# Sway Notification Center
-wget -q -O "/home/$user/.config/swaync/config.json" \
-    https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/swaync/config.json || \
-    echo "Warning: Could not download swaync config"
+# Only run inline fallbacks if neither local deploy nor download succeeded
+if [ "$CONFIG_DEPLOYED" = "true" ]; then
+    # Configs already in place from deploy-configs.sh — skip all fallbacks
+    echo "  Config files deployed from repo. Skipping inline fallbacks."
+fi
 
 # ============================================================================
-# FALLBACK: CREATE MINIMAL SWAY CONFIG IF DOWNLOAD FAILED
+# FALLBACK: CREATE MINIMAL SWAY CONFIG IF NEITHER DEPLOY NOR DOWNLOAD WORKED
 # ============================================================================
 if [ ! -f "/home/$user/.config/sway/config" ]; then
     echo "Creating fallback minimal Sway config..."
@@ -168,7 +224,7 @@ if [ ! -f "/home/$user/.config/sway/config" ]; then
 
 set $mod Mod4
 set $term foot
-set $menu wofi --show drun
+set $menu rofi -show drun
 
 # Autostart essentials
 exec swaync
@@ -265,7 +321,10 @@ bindsym $mod+minus scratchpad show
 
 # Screenshots
 bindsym Print exec grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot copied to clipboard"
-bindsym $mod+Shift+s exec systemctl suspend
+bindsym $mod+Shift+s exec grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot copied to clipboard"
+
+# Suspend / sleep
+bindsym $mod+Control+Shift+s exec systemctl suspend
 
 # Media keys
 bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
@@ -770,9 +829,11 @@ echo "Rebuilding font cache..."
 su - "$user" -c "fc-cache -f -v" &>/dev/null
 
 # ============================================================================
-# CREATE ENVIRONMENT FILE FOR SWAY
+# ENSURE SWAY ENVIRONMENT FILE EXISTS
 # ============================================================================
-cat > "/home/$user/.config/sway/env" << 'EOF'
+# deploy-configs.sh already handles this; create it now only if missing
+if [ ! -f "/home/$user/.config/sway/env" ]; then
+    cat > "/home/$user/.config/sway/env" << 'EOF'
 # Environment variables for Sway
 export XDG_CURRENT_DESKTOP=sway
 export XDG_SESSION_TYPE=wayland
@@ -784,8 +845,8 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 export LIBVA_DRIVER_NAME=i965
 export VDPAU_DRIVER=va_gl
 EOF
-
-chown "$user:$user" "/home/$user/.config/sway/env"
+    chown "$user:$user" "/home/$user/.config/sway/env"
+fi
 
 # ============================================================================
 # FINAL OPTIMIZATIONS
@@ -815,7 +876,7 @@ cat << 'EOF'
 ╠═══════════════════════════════════════════════════════════════════════════╣
 ║  Essential Keybinds:                                                      ║
 ║    Super + Enter          → Open terminal (Foot)                          ║
-║    Super + D              → Application launcher (Wofi)                   ║
+║    Super + D              → Application launcher (Rofi)                   ║
 ║    Super + 1-9            → Switch workspaces                             ║
 ║    Super + Shift + 1-9    → Move window to workspace                      ║
 ║    Super + Shift + Q      → Close window                                  ║

@@ -1,0 +1,277 @@
+#!/usr/bin/env python3
+"""sway-welcome — startup welcome screen for BeanGreen247's sway-setup-script."""
+import gi, os, sys, subprocess
+os.environ.setdefault('GDK_BACKEND', 'x11')
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, Pango
+
+FLAG = os.path.expanduser("~/.config/sway-welcome/no-show")
+
+# Exit silently if user disabled it (unless --force passed, e.g. from rofi)
+if os.path.exists(FLAG) and '--force' not in sys.argv:
+    sys.exit(0)
+
+CSS = b"""
+window {
+    background-color: #0a1628;
+}
+#card {
+    background-color: #0c1222;
+    border: 1px solid rgba(42,90,138,0.65);
+    border-radius: 12px;
+    padding: 28px 32px;
+}
+#title {
+    color: #79c0ff;
+    font-family: "DejaVu Sans Mono";
+    font-size: 22pt;
+    font-weight: bold;
+}
+#subtitle {
+    color: #6a8aaa;
+    font-family: "DejaVu Sans Mono";
+    font-size: 10pt;
+    margin-top: 2px;
+}
+#section-label {
+    color: #58a6ff;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 4px;
+}
+#shortcut-key {
+    background-color: rgba(42,90,138,0.45);
+    color: #79c0ff;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+    border-radius: 4px;
+    padding: 2px 7px;
+}
+#shortcut-desc {
+    color: #b0c8e0;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+}
+button {
+    background-image: none;
+    box-shadow: none;
+    text-shadow: none;
+}
+button.link-btn {
+    background-color: #2a5a8a;
+    background-image: none;
+    color: #dce8f5;
+    border: 1px solid #58a6ff;
+    border-radius: 6px;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 5px 14px;
+    min-height: 0;
+    box-shadow: none;
+}
+button.link-btn label {
+    font-weight: bold;
+    color: #dce8f5;
+}
+button.link-btn:hover {
+    background-color: #3a7abf;
+    background-image: none;
+    color: #ffffff;
+}
+button#close-btn {
+    background-color: #2a5a8a;
+    background-image: none;
+    color: #dce8f5;
+    border: none;
+    border-radius: 6px;
+    font-family: "DejaVu Sans Mono";
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 7px 28px;
+    min-height: 0;
+    box-shadow: none;
+}
+button#close-btn label {
+    font-weight: bold;
+    color: #dce8f5;
+}
+button#close-btn:hover {
+    background-color: #3a7abf;
+    background-image: none;
+}
+checkbutton {
+    color: #6a8aaa;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+}
+separator {
+    background-color: rgba(42,90,138,0.35);
+    min-height: 1px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+"""
+
+SHORTCUTS = [
+    ("Apps & Windows",  [
+        ("Super + Enter",           "Open terminal"),
+        ("Super + D",               "App launcher (rofi)"),
+        ("Super + Shift + Q",       "Close window"),
+        ("Super + F",               "Toggle fullscreen"),
+        ("Super + Shift + Space",   "Toggle floating"),
+        ("Super + Shift + E",       "Exit sway"),
+    ]),
+    ("Workspaces",  [
+        ("Super + 1–9",             "Switch workspace"),
+        ("Super + Shift + 1–9",     "Move window to workspace"),
+    ]),
+    ("Screenshots & Media",  [
+        ("Print  /  Super + Shift + S",  "Area screenshot → clipboard"),
+        ("Super + Ctrl + Shift + S",     "Suspend / sleep"),
+    ]),
+    ("Clipboard & Notifications",  [
+        ("Super + V",               "Clipboard history (rofi)"),
+        ("Super + Shift + V",       "Paste from clipboard"),
+        ("Super + Shift + N",       "Notification centre"),
+    ]),
+    ("Layout",  [
+        ("Super + H / V",           "Split horizontal / vertical"),
+        ("Super + \\",              "Split vertical"),
+        ("Super + W / E / S",       "Tabbed / tiled / stacked"),
+    ]),
+]
+
+
+def open_url(url):
+    subprocess.Popen(["xdg-open", url])
+
+
+class WelcomeWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
+        self.set_title("Welcome")
+        self.set_default_size(620, 680)
+        self.set_resizable(False)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_decorated(False)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        self.connect("key-press-event", lambda w, e:
+            Gtk.main_quit() if e.keyval == Gdk.KEY_Escape else None)
+
+        # ── outer padding ──
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        outer.set_margin_top(20); outer.set_margin_bottom(20)
+        outer.set_margin_start(20); outer.set_margin_end(20)
+        self.add(outer)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.set_name("card")
+        outer.pack_start(card, True, True, 0)
+
+        # ── header ──
+        title = Gtk.Label(label="Sway Setup")
+        title.set_name("title")
+        title.set_halign(Gtk.Align.START)
+        card.pack_start(title, False, False, 0)
+
+        subtitle = Gtk.Label(label="Minimal Wayland desktop for Debian  •  by BeanGreen247")
+        subtitle.set_name("subtitle")
+        subtitle.set_halign(Gtk.Align.START)
+        card.pack_start(subtitle, False, False, 0)
+
+        # ── link buttons ──
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        btn_row.set_margin_top(16)
+        card.pack_start(btn_row, False, False, 0)
+
+        gh_btn = Gtk.Button(label="GitHub")
+        gh_btn.get_child().set_xalign(0.5)
+        gh_btn.get_style_context().add_class("link-btn")
+        gh_btn.connect("clicked", lambda _: open_url("https://github.com/BeanGreen247/sway-setup-script"))
+        btn_row.pack_start(gh_btn, False, False, 0)
+
+        sp_btn = Gtk.Button(label="Sponsor")
+        sp_btn.get_child().set_xalign(0.5)
+        sp_btn.get_style_context().add_class("link-btn")
+        sp_btn.connect("clicked", lambda _: open_url("https://github.com/sponsors/BeanGreen247"))
+        btn_row.pack_start(sp_btn, False, False, 0)
+
+        # ── separator ──
+        card.pack_start(Gtk.Separator(), False, False, 0)
+
+        # ── shortcuts (scrollable) ──
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.set_min_content_height(340)
+        card.pack_start(scroll, True, True, 0)
+
+        shortcuts_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        scroll.add(shortcuts_box)
+
+        for section, binds in SHORTCUTS:
+            lbl = Gtk.Label(label=section.upper())
+            lbl.set_name("section-label")
+            lbl.set_halign(Gtk.Align.START)
+            shortcuts_box.pack_start(lbl, False, False, 0)
+
+            grid = Gtk.Grid()
+            grid.set_column_spacing(14)
+            grid.set_row_spacing(5)
+            grid.set_margin_bottom(6)
+            shortcuts_box.pack_start(grid, False, False, 0)
+
+            for row_i, (key, desc) in enumerate(binds):
+                key_lbl = Gtk.Label(label=key)
+                key_lbl.set_name("shortcut-key")
+                key_lbl.set_halign(Gtk.Align.START)
+                key_lbl.set_xalign(0)
+                grid.attach(key_lbl, 0, row_i, 1, 1)
+
+                desc_lbl = Gtk.Label(label=desc)
+                desc_lbl.set_name("shortcut-desc")
+                desc_lbl.set_halign(Gtk.Align.START)
+                grid.attach(desc_lbl, 1, row_i, 1, 1)
+
+        # ── separator ──
+        card.pack_start(Gtk.Separator(), False, False, 0)
+
+        # ── bottom row: checkbox + close ──
+        bottom = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        card.pack_start(bottom, False, False, 0)
+
+        self._check = Gtk.CheckButton(label="Don't show this again")
+        # Set initial state from flag file
+        self._check.set_active(os.path.exists(FLAG))
+        self._check.connect("toggled", self._on_toggle)
+        bottom.pack_start(self._check, True, True, 0)
+
+        close_btn = Gtk.Button(label="Close")
+        close_btn.get_child().set_xalign(0.5)
+        close_btn.set_name("close-btn")
+        close_btn.connect("clicked", lambda _: Gtk.main_quit())
+        bottom.pack_end(close_btn, False, False, 0)
+
+    def _on_toggle(self, checkbox):
+        if checkbox.get_active():
+            os.makedirs(os.path.dirname(FLAG), exist_ok=True)
+            open(FLAG, "w").close()
+        else:
+            try:
+                os.remove(FLAG)
+            except FileNotFoundError:
+                pass
+
+
+win = WelcomeWindow()
+win.show_all()
+Gtk.main()

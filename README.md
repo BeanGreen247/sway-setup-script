@@ -9,11 +9,18 @@ A complete, minimal Wayland/Sway installation focused on performance and efficie
 
 ### Core Components
 - **Sway** - Tiling Wayland compositor (i3-compatible)
-- **Waybar** - Lightweight status bar
+- **Waybar** - Lightweight status bar with clock, calendar popup, and power button
 - **Foot** - Fast, minimal terminal emulator
-- **Wofi** - Application launcher
+- **Rofi** - Application launcher with custom midnight theme
 - **Sway Notification Center** - Modern notification daemon
 - **PipeWire** - Modern audio stack (lower CPU than PulseAudio)
+
+### Custom Applications
+Three Python GTK3 apps are included in `~/.local/bin/`, all styled with the midnight dark theme:
+
+- **`sway-welcome`** — Welcome screen shown on first login. Lists key keybindings, links to GitHub and sponsor page, and has a "Don't show again" checkbox. Run with `--force` to show it at any time.
+- **`sway-power`** — Power menu (`$mod+Shift+p` or waybar ⏻ button). Sleep requires no password. Reboot and Shutdown prompt for sudo password.
+- **`cal-popup`** — GTK calendar popup launched by clicking the waybar clock. Closes on focus-out or Escape. Wrapped by `cal-toggle` which prevents duplicate windows.
 
 ### System Tools
 - **PCManFM** - Lightweight file manager
@@ -21,6 +28,9 @@ A complete, minimal Wayland/Sway installation focused on performance and efficie
 - **Grim + Slurp** - Screenshot tools
 - **Brightnessctl** - Backlight control
 - **LXAppearance** - GTK theme manager
+- **Cliphist + wl-copy** - Clipboard history manager (`$mod+v`)
+- **Arc-Dark GTK theme + Papirus icons** - Applied system-wide
+- **Wlsunset** - Night light (adjustable latitude/longitude)
 
 ### Intel HD 530 Optimizations
 - Mesa Vulkan drivers
@@ -48,6 +58,9 @@ A complete, minimal Wayland/Sway installation focused on performance and efficie
 <!-- Add waybar screenshot here -->
 ![Waybar](screenshots/waybar.png)
 
+### Sway-Power Menu
+![Sway-Power Menu](screenshots/sway-power.png)
+
 ---
 
 ## Quick Start
@@ -59,6 +72,29 @@ A complete, minimal Wayland/Sway installation focused on performance and efficie
 
 ### Installation Steps
 
+**Option A — Clone the full repo (recommended)**
+```bash
+# 1. Clone the repository
+git clone https://github.com/BeanGreen247/sway-setup-script.git
+cd sway-setup-script
+
+# 2. Make executable
+chmod +x *.sh
+
+# 3. Setup Debian repositories
+sudo bash sources_list_setup.sh
+
+# 4. Run main installation
+sudo bash sway-minimal-install.sh
+
+# 5. (Optional) Additional tweaks
+sudo bash sway-post-install-tweaks.sh
+
+# 6. Reboot
+sudo systemctl reboot
+```
+
+**Option B — Download scripts individually**
 ```bash
 # 1. Download all scripts
 wget https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/sources_list_setup.sh
@@ -245,7 +281,7 @@ Already configured via:
 
 ## Configuration File Locations
 
-All configs are stored in `~/.config/`:
+All configs are stored in `~/.config/` and custom scripts in `~/.local/bin/`:
 
 ```
 ~/.config/sway/
@@ -257,7 +293,7 @@ All configs are stored in `~/.config/`:
 
 ~/.config/waybar/
 ├── config                 # Waybar modules (JSON)
-└── style.css              # Waybar styling
+└── style.css              # Waybar styling (midnight theme)
 
 ~/.config/foot/
 └── foot.ini               # Terminal config
@@ -266,7 +302,17 @@ All configs are stored in `~/.config/`:
 └── config.json            # Notification settings
 
 ~/.config/gtk-3.0/
-└── settings.ini           # GTK theme (if tweaks applied)
+└── settings.ini           # GTK theme (Arc-Dark + Papirus)
+
+~/.config/rofi/
+├── config.rasi            # Rofi options (drun, icons, font)
+└── midnight.rasi          # Custom midnight dark theme
+
+~/.local/bin/
+├── sway-welcome           # Welcome screen (GTK3)
+├── sway-power             # Power menu (GTK3)
+├── cal-popup              # Calendar popup (GTK3)
+└── cal-toggle             # Calendar toggle wrapper
 ```
 
 ---
@@ -278,8 +324,13 @@ Default: `~/Pictures/Screenshots/`
 Filename format: `screenshot-YYYYMMDD-HHMMSS.png`
 
 **Keybinds**:
-- `Print` - Area selection (copied to clipboard)
-- `Super + Shift + S` - Suspend system
+- `Print` — Full-screen screenshot (saved to ~/Pictures/Screenshots + copied to clipboard)
+- `$mod+Shift+s` — Area selection screenshot
+- `$mod+Shift+p` — Power menu (sway-power)
+- `$mod+Control+Shift+s` — Suspend (sleep immediately, no confirmation)
+- `$mod+d` — App launcher (rofi)
+- `$mod+v` — Clipboard history (cliphist → rofi → wl-copy)
+- `$mod+Return` — Open terminal (foot)
 
 ---
 
@@ -378,10 +429,14 @@ swaymsg reload
 
 ```bash
 # Remove Sway packages
-sudo apt remove --purge sway swaybg waybar foot wofi
+sudo apt remove --purge sway swaybg waybar foot rofi
 
 # Remove configs
-rm -rf ~/.config/sway ~/.config/waybar ~/.config/foot
+rm -rf ~/.config/sway ~/.config/waybar ~/.config/foot ~/.config/rofi
+
+# Remove custom scripts
+rm -f ~/.local/bin/sway-welcome ~/.local/bin/sway-power \
+      ~/.local/bin/cal-popup ~/.local/bin/cal-toggle
 
 # Remove auto-start
 rm ~/.bash_profile
@@ -435,18 +490,20 @@ output HDMI-A-1 resolution 1920x1080 position 0,0
 output eDP-1 resolution 1920x1080 position 1920,0
 ```
 
-### Custom Wofi Theme
-Edit `~/.config/wofi/style.css`:
-```css
-window {
-    background-color: rgba(0, 0, 0, 0.9);
-    border: 2px solid #89b4fa;
-}
+### Custom Rofi Theme
+The midnight theme is at `~/.config/rofi/midnight.rasi`. Edit colors there to restyle the launcher. The active palette:
+```
+Background:  #0a1628
+Accent:      #2a5a8a
+Highlight:   #58a6ff
+Foreground:  #dce8f5
+Font:        DejaVu Sans Mono 12
 ```
 
 ---
 
 **Created**: February 2026  
+**Last Updated**: February 2026  
 **Tested on**: Debian 13 (Trixie)  
 **Target Hardware**: Intel i5-6500T (HD 530), 40GB RAM, 1TB HDD
 

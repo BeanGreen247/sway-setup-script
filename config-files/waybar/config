@@ -1,0 +1,137 @@
+{
+  "reload_style_on_change": true,
+  "layer": "top",
+  "position": "top",
+  "spacing": 4,
+  "height": 36,
+  "margin-top": 8,
+  "margin-right": 12,
+  "margin-left": 12,
+
+  "modules-left": ["sway/workspaces", "sway/mode"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "cpu",
+    "memory",
+    "disk",
+    "temperature",
+    "pulseaudio",
+    "network",
+    "battery",
+    "tray",
+    "custom/power"
+  ],
+
+  "sway/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{name}"
+  },
+
+  "sway/mode": {
+    "format": "  {}"
+  },
+
+  "clock": {
+    "interval": 1,
+    "format": "{:%A   %d %b %Y   %H:%M:%S}",
+    "tooltip": false,
+    "on-click": "/home/bean/.local/bin/cal-toggle",
+    "calendar": {
+      "mode": "month",
+      "on-scroll": 1,
+      "format": {
+        "months":   "<span color='#79c0ff'><b>{}</b></span>",
+        "days":     "<span color='#dce8f5'>{}</span>",
+        "weeks":    "<span color='#6a8aaa'><b>W{}</b></span>",
+        "weekdays": "<span color='#58a6ff'><b>{}</b></span>",
+        "today":    "<span background='#4a8fc4' color='#ffffff'><b>{}</b></span>"
+      }
+    },
+    "actions": {
+      "on-scroll-up":      "shift_up",
+      "on-scroll-down":    "shift_down"
+    }
+  },
+
+  "cpu": {
+    "interval": 2,
+    "format": "\uf2db {usage}%",
+    "tooltip-format": "CPU: {usage}%  load: {load}"
+  },
+
+  "memory": {
+    "interval": 2,
+    "format": "\uf538 {percentage}%",
+    "tooltip-format": "{used:0.1f} GiB / {total:0.1f} GiB used"
+  },
+
+  "disk": {
+    "interval": 30,
+    "format": "\uf1c0 {percentage_used}%",
+    "path": "/",
+    "tooltip-format": "Used:  {used}\nFree:  {free}\nTotal: {total}"
+  },
+
+  "temperature": {
+    "critical-threshold": 80,
+    "interval": 5,
+    "format": "\uf2c9 {temperatureC}\u00b0C",
+    "format-critical": "\uf2c9 {temperatureC}\u00b0C",
+    "tooltip": false
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "\uf6a9 muted",
+    "on-click": "pavucontrol",
+    "on-click-right": "pamixer -t",
+    "tooltip-format": "{desc}\nVolume: {volume}%",
+    "scroll-step": 5,
+    "format-icons": {
+      "default": ["\uf026", "\uf027", "\uf028"]
+    }
+  },
+
+  "network": {
+    "format-wifi": "\uf1eb {signalStrength}%",
+    "format-ethernet": "\uf796",
+    "format-disconnected": "\uf071 off",
+    "format-linked": "\uf796",
+    "tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%\n\u2193 {bandwidthDownBytes}  \u2191 {bandwidthUpBytes}",
+    "tooltip-format-ethernet": "{ifname}\n\u2193 {bandwidthDownBytes}  \u2191 {bandwidthUpBytes}",
+    "tooltip-format-disconnected": "No connection",
+    "interval": 3
+  },
+
+  "battery": {
+    "format": "{icon} {capacity}%",
+    "format-charging": "\uf0e7 {capacity}%",
+    "format-plugged": "\uf1e6 {capacity}%",
+    "format-full": "\uf240 full",
+    "format-icons": ["\uf244", "\uf243", "\uf242", "\uf241", "\uf240"],
+    "tooltip-format": "{timeTo}  \u00b7  {power:0.1f}W",
+    "interval": 5,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    }
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  },
+
+  "custom/separator#dot": {
+    "format": "·",
+    "interval": "once",
+    "tooltip": false
+  },
+
+  "custom/power": {
+    "format": "⏻",
+    "on-click": "/home/bean/.local/bin/sway-power",
+    "tooltip": false
+  }
+}

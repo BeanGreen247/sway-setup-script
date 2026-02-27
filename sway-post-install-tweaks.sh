@@ -39,6 +39,27 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         imv \
         zathura \
         gnome-calculator
+
+    # ── VS Code (Microsoft Official Method) ──────────────────────────────────
+    echo "Installing Visual Studio Code from Microsoft repository..."
+    apt install -y wget gpg apt-transport-https
+
+    # Import Microsoft's GPG key into the trusted keyrings directory
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
+        | gpg --dearmor > /tmp/packages.microsoft.gpg
+    install -D -o root -g root -m 644 \
+        /tmp/packages.microsoft.gpg \
+        /etc/apt/keyrings/packages.microsoft.gpg
+    rm -f /tmp/packages.microsoft.gpg
+
+    # Add the stable VS Code apt repository
+    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
+https://packages.microsoft.com/repos/code stable main" \
+        > /etc/apt/sources.list.d/vscode.list
+
+    apt update
+    apt install -y code
+    echo "✓ Visual Studio Code installed"
 fi
 
 # ============================================================================
@@ -47,32 +68,13 @@ fi
 read -p "Install development tools? (Docker, Node.js, Python) [y/N]: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Remove ALL Microsoft/VSCode configurations (VSCode can be installed separately later)
-    echo "Cleaning up any existing Microsoft/VSCode repository configuration..."
-    
-    # Remove all Microsoft GPG keyrings
-    rm -f /usr/share/keyrings/packages.microsoft.gpg
-    rm -f /usr/share/keyrings/microsoft.gpg
-    rm -f /usr/share/keyrings/microsoft*.gpg
-    
-    # Remove ALL Microsoft-related source lists
-    rm -f /etc/apt/sources.list.d/vscode.list*
-    rm -f /etc/apt/sources.list.d/microsoft*.list*
-    rm -f /etc/apt/sources.list.d/*vscode*
-    rm -f /etc/apt/sources.list.d/*microsoft*
-    
-    # Clear apt cache
-    rm -rf /var/lib/apt/lists/*
-    mkdir -p /var/lib/apt/lists/partial
-    
     echo "Installing development tools (Docker, Node.js, Python)..."
     apt update
     apt install -y docker.io docker-compose nodejs npm python3-pip python3-venv
-    
+
     # Add user to docker group
     usermod -aG docker "$user"
     echo "✓ Development tools installed"
-    echo "Note: VSCode can be installed later via: https://code.visualstudio.com/docs/setup/linux"
 fi
 
 # ============================================================================

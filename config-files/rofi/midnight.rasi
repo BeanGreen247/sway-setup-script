@@ -1,0 +1,125 @@
+/* ═══════════════════════════════════════════════════════════════
+ *  MIDNIGHT GLASS  ·  Rofi Theme
+ *  Matches waybar/sway midnight blue palette
+ * ═══════════════════════════════════════════════════════════════ */
+
+* {
+    bg0:        #0a1628;
+    bg1:        #0c1222dd;
+    accent:     #2a5a8a;
+    accent-hi:  #58a6ff;
+    fg0:        #dce8f5;
+    fg1:        #b0c8e0;
+    fg2:        #6a8aaa;
+    border-col: #ffffff10;
+    urgent:     #8a2a2a;
+
+    background-color:   transparent;
+    text-color:         @fg0;
+    border-color:       @border-col;
+}
+
+window {
+    background-color:   @bg1;
+    border:             1px solid;
+    border-color:       @border-col;
+    border-radius:      14px;
+    width:              640px;
+    padding:            8px;
+}
+
+mainbox {
+    background-color:   transparent;
+    children:           [ inputbar, listview ];
+    spacing:            6px;
+}
+
+inputbar {
+    background-color:   #2a5a8a30;
+    border:             1px solid;
+    border-color:       @accent;
+    border-radius:      10px;
+    padding:            8px 12px;
+    spacing:            8px;
+    children:           [ prompt, entry ];
+}
+
+prompt {
+    background-color:   transparent;
+    text-color:         @accent-hi;
+    font:               "DejaVu Sans Mono Bold 12";
+}
+
+entry {
+    background-color:   transparent;
+    text-color:         @fg0;
+    cursor:             text;
+    placeholder:        "Type to filter";
+    placeholder-color:  @fg2;
+}
+
+listview {
+    background-color:   transparent;
+    lines:              10;
+    columns:            1;
+    spacing:            2px;
+    scrollbar:          false;
+    cycle:              true;
+}
+
+element {
+    background-color:   transparent;
+    border-radius:      8px;
+    padding:            6px 10px;
+    spacing:            10px;
+    orientation:        horizontal;
+    children:           [ element-icon, element-text ];
+}
+
+element normal.normal  { background-color: transparent; text-color: @fg0; }
+element normal.urgent  { background-color: #8a2a2a30;   text-color: @fg0; }
+element normal.active  { background-color: #2a5a8a30;   text-color: @fg0; }
+
+element selected.normal {
+    background-color:   @accent;
+    text-color:         #ffffff;
+}
+element selected.urgent {
+    background-color:   @urgent;
+    text-color:         #ffffff;
+}
+element selected.active {
+    background-color:   @accent-hi;
+    text-color:         #0c1222;
+}
+
+element alternate.normal  { background-color: transparent; text-color: @fg1; }
+element alternate.urgent  { background-color: #8a2a2a20;   text-color: @fg1; }
+element alternate.active  { background-color: #2a5a8a20;   text-color: @fg1; }
+
+element-icon {
+    size:               22px;
+    vertical-align:     0.5;
+    background-color:   transparent;
+}
+
+element-text {
+    background-color:   transparent;
+    text-color:         inherit;
+    vertical-align:     0.5;
+    highlight:          bold #58a6ff;
+}
+
+message {
+    background-color:   #8a2a2a30;
+    border:             1px solid;
+    border-color:       @urgent;
+    border-radius:      8px;
+    padding:            6px 10px;
+    margin:             4px 0px 0px 0px;
+}
+
+textbox {
+    background-color:   transparent;
+    text-color:         @fg1;
+}

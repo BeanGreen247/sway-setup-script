@@ -17,11 +17,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Script URLs
-REPO_BASE="https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main"
+# Script names
 SOURCES_SCRIPT="sources_list_setup.sh"
 MAIN_SCRIPT="sway-minimal-install.sh"
 TWEAKS_SCRIPT="sway-post-install-tweaks.sh"
+DEPLOY_SCRIPT="deploy-configs.sh"
 
 echo -e "${BLUE}"
 cat << 'EOF'
@@ -102,10 +102,29 @@ find_and_copy_script() {
     return 1
 }
 
+# Function to find and copy a directory (e.g. config-files/)
+find_and_copy_dir() {
+    local dir_name="$1"
+    
+    if [ -d "$SCRIPT_DIR/$dir_name" ]; then
+        cp -r "$SCRIPT_DIR/$dir_name" .
+        echo "✓ Found $dir_name/ in script directory"
+        return 0
+    elif [ -d "$ORIGINAL_DIR/$dir_name" ]; then
+        cp -r "$ORIGINAL_DIR/$dir_name" .
+        echo "✓ Found $dir_name/ in original directory"
+        return 0
+    fi
+    
+    return 1
+}
+
 # Try to find each script
 find_and_copy_script "$SOURCES_SCRIPT" || echo "Note: $SOURCES_SCRIPT will be embedded"
-find_and_copy_script "$MAIN_SCRIPT" || echo "Warning: $MAIN_SCRIPT not found locally"
-find_and_copy_script "$TWEAKS_SCRIPT" || echo "Note: $TWEAKS_SCRIPT not available"
+find_and_copy_script "$MAIN_SCRIPT"    || echo "Warning: $MAIN_SCRIPT not found locally"
+find_and_copy_script "$TWEAKS_SCRIPT"  || echo "Note: $TWEAKS_SCRIPT not available"
+find_and_copy_script "$DEPLOY_SCRIPT"  || echo "Note: $DEPLOY_SCRIPT not found (configs will use fallbacks)"
+find_and_copy_dir "config-files"       || echo "Note: config-files/ not found (configs will use fallbacks)"
 
 ################################################################################
 # STEP 2: Setup Debian Repositories

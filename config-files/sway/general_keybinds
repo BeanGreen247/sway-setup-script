@@ -1,0 +1,8 @@
+# Screenshots
+bindsym Print exec grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot copied to clipboard"
+bindsym $mod+Shift+s exec grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot copied to clipboard"
+
+# Suspend / sleep
+bindsym $mod+Control+Shift+s exec systemctl suspend
+
+bindsym $mod+Shift+n exec swaync-client -t -sw

@@ -1,0 +1,2 @@
+#!/bin/bash
+pkill -f cal-popup || GDK_BACKEND=x11 /home/bean/.local/bin/cal-popup &

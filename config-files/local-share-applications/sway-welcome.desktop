@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Sway Welcome
+Comment=Welcome screen and keyboard shortcuts reference
+Exec=/home/bean/.local/bin/sway-welcome --force
+Icon=help-browser
+Terminal=false
+Type=Application
+Categories=System;
