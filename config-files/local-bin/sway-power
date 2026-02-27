@@ -136,7 +136,6 @@ class PowerWindow(Gtk.Window):
         )
 
         self.connect("key-press-event", self._on_key)
-        self._pending_action = None
 
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         outer.set_margin_top(16); outer.set_margin_bottom(16)
@@ -189,61 +188,6 @@ class PowerWindow(Gtk.Window):
 
         self.show_all()
 
-    # ── auth view ─────────────────────────────────────────────────────────────
-
-    def _build_auth(self, action):
-        self._clear_card()
-        self._pending_action = action
-        self.set_default_size(340, 0)
-
-        label_map = {'sleep': 'Sleep', 'reboot': 'Reboot', 'shutdown': 'Shutdown'}
-        title = Gtk.Label(label=f"Confirm {label_map[action]}")
-        title.set_name("title")
-        title.set_halign(Gtk.Align.CENTER)
-        self._card.pack_start(title, False, False, 0)
-
-        sep = Gtk.Separator()
-        self._card.pack_start(sep, False, False, 0)
-
-        pw_lbl = Gtk.Label(label="Enter your password to continue:")
-        pw_lbl.set_name("pw-label")
-        pw_lbl.set_halign(Gtk.Align.START)
-        self._card.pack_start(pw_lbl, False, False, 0)
-
-        self._pw_entry = Gtk.Entry()
-        self._pw_entry.set_visibility(False)
-        self._pw_entry.set_placeholder_text("Password")
-        self._pw_entry.connect("activate", self._on_confirm)
-        self._card.pack_start(self._pw_entry, False, False, 0)
-
-        self._err_label = Gtk.Label(label="")
-        self._err_label.set_name("err-label")
-        self._err_label.set_halign(Gtk.Align.START)
-        self._card.pack_start(self._err_label, False, False, 0)
-
-        sep2 = Gtk.Separator()
-        self._card.pack_start(sep2, False, False, 0)
-
-        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        btn_row.set_halign(Gtk.Align.END)
-        self._card.pack_start(btn_row, False, False, 0)
-
-        back = Gtk.Button(label="Back")
-        back.set_name("btn-cancel")
-        back.get_child().set_xalign(0.5)
-        back.connect("clicked", lambda _: self._build_menu())
-        btn_row.pack_start(back, False, False, 0)
-
-        confirm = Gtk.Button(label="Confirm")
-        name = {'sleep': 'btn-sleep', 'reboot': 'btn-reboot', 'shutdown': 'btn-shutdown'}[action]
-        confirm.set_name(name)
-        confirm.get_child().set_xalign(0.5)
-        confirm.connect("clicked", self._on_confirm)
-        btn_row.pack_start(confirm, False, False, 0)
-
-        self.show_all()
-        self._pw_entry.grab_focus()
-
     # ── helpers ───────────────────────────────────────────────────────────────
 
     def _clear_card(self):
@@ -251,50 +195,27 @@ class PowerWindow(Gtk.Window):
             self._card.remove(child)
 
     def _on_action(self, _btn, action):
-        # Sleep needs no auth (logind allows it for active sessions)
-        if action == 'sleep':
-            self._execute(action, password=None)
-        else:
-            self._build_auth(action)
+        self._execute(action)
 
-    def _on_confirm(self, *_):
-        pw = self._pw_entry.get_text()
-        if not pw:
-            self._err_label.set_text("Password cannot be empty.")
-            return
-        self._execute(self._pending_action, password=pw)
-
-    def _execute(self, action, password):
+    def _execute(self, action):
         cmd = ACTIONS[action]
         try:
-            if password is None:
-                # suspend: direct call (logind/polkit allows for active sessions)
-                result = subprocess.run(
-                    ['systemctl', cmd[1]],
-                    capture_output=True, text=True
-                )
-            else:
-                # reboot/poweroff via sudo -S
-                result = subprocess.run(
-                    ['sudo', '-S', 'systemctl', cmd[1]],
-                    input=password + '\n',
-                    capture_output=True, text=True,
-                    timeout=10
-                )
-            if result.returncode == 0:
-                Gtk.main_quit()
-            else:
+            result = subprocess.run(
+                ['systemctl', cmd[1]],
+                capture_output=True, text=True
+            )
+            if result.returncode != 0:
                 err = result.stderr.strip()
-                if 'incorrect password' in err.lower() or 'password' in err.lower() or result.returncode == 1:
-                    self._err_label.set_text("Incorrect password. Try again.")
-                    self._pw_entry.set_text("")
-                    self._pw_entry.grab_focus()
-                else:
-                    self._err_label.set_text(f"Error: {err[:60]}")
-        except subprocess.TimeoutExpired:
-            self._err_label.set_text("Timed out. Try again.")
+                dialog = Gtk.MessageDialog(
+                    parent=self, flags=0,
+                    message_type=Gtk.MessageType.ERROR,
+                    buttons=Gtk.ButtonsType.OK,
+                    text=f"systemctl {cmd[1]} failed:\n{err[:120]}"
+                )
+                dialog.run()
+                dialog.destroy()
         except Exception as e:
-            self._err_label.set_text(str(e)[:60])
+            pass
 
     def _on_key(self, _w, event):
         if event.keyval == Gdk.KEY_Escape:
