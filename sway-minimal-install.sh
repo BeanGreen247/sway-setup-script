@@ -145,7 +145,7 @@ apt install -y \
     wine || true
 
 # Steam (needs i386 and non-free)
-apt install -y steam:i386 || true
+apt install -y steam || true
 
 # ============================================================================
 # CLEANUP APT CACHE
@@ -818,6 +818,7 @@ EOF
 # SET PROPER PERMISSIONS
 # ============================================================================
 chown -R "$user:$user" "/home/$user/.config"
+chown -R "$user:$user" "/home/$user/.local"
 chown -R "$user:$user" "/home/$user/.fonts"
 chown "$user:$user" "/home/$user/.bash_profile"
 chown -R "$user:$user" "/home/$user/Pictures"
