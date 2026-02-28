@@ -156,8 +156,8 @@ exec /home/bean/.local/bin/sway-welcome
 # Paste with Super+Shift+V
 bindsym $mod+shift+v exec wl-paste
 
-# Clipboard history (cliphist + wofi)
-# removed duplicate rofi binding; kept the wofi binding later in this file
+# Clipboard history (cliphist + rofi)
+bindsym $mod+v exec cliphist list | rofi -dmenu | cliphist decode | wl-copy
 
 # Night light (adjust latitude/longitude for your location)
 exec wlsunset -l 40.7 -L -74.0
@@ -168,7 +168,3 @@ bindsym $mod+Shift+p exec /home/bean/.local/bin/sway-power
 # Performance optimizations
 focus_follows_mouse no
 mouse_warping none
-
-# Clipboard manager
-exec wl-paste --watch cliphist store
-bindsym $mod+v exec cliphist list | wofi -dmenu | cliphist decode | wl-copy

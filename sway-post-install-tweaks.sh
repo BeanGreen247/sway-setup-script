@@ -39,27 +39,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         imv \
         zathura \
         gnome-calculator
-
-    # ── VS Code (Microsoft Official Method) ──────────────────────────────────
-    echo "Installing Visual Studio Code from Microsoft repository..."
-    apt install -y wget gpg apt-transport-https
-
-    # Import Microsoft's GPG key into the trusted keyrings directory
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
-        | gpg --dearmor > /tmp/packages.microsoft.gpg
-    install -D -o root -g root -m 644 \
-        /tmp/packages.microsoft.gpg \
-        /etc/apt/keyrings/packages.microsoft.gpg
-    rm -f /tmp/packages.microsoft.gpg
-
-    # Add the stable VS Code apt repository
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
-https://packages.microsoft.com/repos/code stable main" \
-        > /etc/apt/sources.list.d/vscode.list
-
-    apt update
-    apt install -y code
-    echo "✓ Visual Studio Code installed"
 fi
 
 # ============================================================================
@@ -112,31 +91,6 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "vm.swappiness=10" > /etc/sysctl.d/99-swappiness.conf
     sysctl -p /etc/sysctl.d/99-swappiness.conf
-fi
-
-# ============================================================================
-# OPTIONAL: Install Steam
-# ============================================================================
-read -p "Install Steam? [y/N]: " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Ensure non-free repos are enabled (check if already configured)
-    if ! grep -q "non-free" /etc/apt/sources.list; then
-        echo "Adding non-free repositories for Steam..."
-        sed -i 's/main$/main contrib non-free non-free-firmware/' /etc/apt/sources.list
-    fi
-    apt update
-    apt install -y steam || echo "⚠ Steam installation failed - ensure non-free repos are enabled"
-fi
-
-# ============================================================================
-# OPTIONAL: Install Lutris for game management
-# ============================================================================
-read -p "Install Lutris (game manager)? [y/N]: " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Install lutris and wine (wine includes both 32 and 64-bit support in Debian 13)
-    apt install -y lutris wine wine32 wine64:i386 || apt install -y lutris wine
 fi
 
 # ============================================================================
@@ -216,17 +170,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     ufw default deny incoming
     ufw default allow outgoing
     systemctl enable ufw
-fi
-
-# ============================================================================
-# OPTIONAL: Install ZSH with Oh-My-Zsh
-# ============================================================================
-read -p "Install ZSH with Oh-My-Zsh? [y/N]: " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    apt install -y zsh
-    su - "$user" -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    chsh -s /usr/bin/zsh "$user"
 fi
 
 # ============================================================================
