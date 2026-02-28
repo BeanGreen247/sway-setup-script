@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Calendar
+Comment=Open calendar popup
+Exec=/home/bean/.local/bin/cal-toggle
+Icon=x-office-calendar
+Terminal=false
+Type=Application
+Categories=Utility;

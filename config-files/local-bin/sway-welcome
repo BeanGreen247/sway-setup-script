@@ -179,7 +179,7 @@ class WelcomeWindow(Gtk.Window):
         outer.pack_start(card, True, True, 0)
 
         # ── header ──
-        title = Gtk.Label(label="Sway Setup")
+        title = Gtk.Label(label="Sway Desktop")
         title.set_name("title")
         title.set_halign(Gtk.Align.START)
         card.pack_start(title, False, False, 0)

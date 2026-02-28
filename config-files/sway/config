@@ -149,6 +149,7 @@ include /etc/sway/config.d/*
 
 # Autostart applications
 exec syncthing --no-browser
+exec /home/bean/.local/bin/sway-first-run
 exec /home/bean/.local/bin/sway-welcome
 
 # Clipboard - Simple wl-clipboard bindings (works without cliphist)

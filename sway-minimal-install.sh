@@ -196,15 +196,57 @@ if [ -f "$DEPLOY_SCRIPT" ] && [ -d "$CONFIG_SRC" ]; then
 else
     echo "  Local config-files/ not found, falling back to GitHub download..."
     CONFIG_DEPLOYED=false
-    # Waybar configs (available at repo root)
-    wget -q -O "/home/$user/.config/waybar/config" \
-        https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/refs/heads/main/waybar-config-v2.json \
-        && echo "  Downloaded waybar config" \
-        || echo "  Warning: Could not download waybar config, will use fallback"
-    wget -q -O "/home/$user/.config/waybar/style.css" \
-        https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/refs/heads/main/waybar-style-v2.css \
-        && echo "  Downloaded waybar style" \
-        || echo "  Warning: Could not download waybar style, will use fallback"
+    GH_RAW="https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/refs/heads/main/config-files"
+
+    _dl() {
+        local url="$1" dst="$2" exe="${3:-0}"
+        mkdir -p "$(dirname "$dst")"
+        if wget -q -O "$dst" "$url" 2>/dev/null && [ -s "$dst" ]; then
+            # strip CRLF and patch hardcoded username
+            sed -i 's/\r//g; s|/home/bean/|/home/'"$user"'/|g' "$dst"
+            [ "$exe" = "1" ] && chmod +x "$dst"
+            echo "  ✓ $(basename $dst)"
+        else
+            echo "  ✗ $(basename $dst) — download failed"
+        fi
+    }
+
+    echo "  Downloading sway configs..."
+    _dl "$GH_RAW/sway/config"             "/home/$user/.config/sway/config"
+    _dl "$GH_RAW/sway/general_keybinds"   "/home/$user/.config/sway/general_keybinds"
+    _dl "$GH_RAW/sway/laptop_keybinds"    "/home/$user/.config/sway/laptop_keybinds"
+    _dl "$GH_RAW/sway/desktop_keybinds"   "/home/$user/.config/sway/desktop_keybinds"
+    _dl "$GH_RAW/sway/env"                "/home/$user/.config/sway/env"
+
+    echo "  Downloading waybar configs..."
+    _dl "$GH_RAW/waybar/config"            "/home/$user/.config/waybar/config"
+    _dl "$GH_RAW/waybar/style.css"         "/home/$user/.config/waybar/style.css"
+
+    echo "  Downloading foot / swaync / rofi / gtk / gsimplecal configs..."
+    _dl "$GH_RAW/foot/foot.ini"            "/home/$user/.config/foot/foot.ini"
+    _dl "$GH_RAW/swaync/config.json"       "/home/$user/.config/swaync/config.json"
+    _dl "$GH_RAW/rofi/config.rasi"         "/home/$user/.config/rofi/config.rasi"
+    _dl "$GH_RAW/rofi/midnight.rasi"       "/home/$user/.config/rofi/midnight.rasi"
+    _dl "$GH_RAW/gtk-3.0/settings.ini"     "/home/$user/.config/gtk-3.0/settings.ini"
+    _dl "$GH_RAW/gtk-3.0/gtk.css"          "/home/$user/.config/gtk-3.0/gtk.css"
+    _dl "$GH_RAW/gsimplecal/config"        "/home/$user/.config/gsimplecal/config"
+
+    echo "  Downloading custom tools..."
+    mkdir -p "/home/$user/.local/bin"
+    _dl "$GH_RAW/local-bin/sway-first-run" "/home/$user/.local/bin/sway-first-run" 1
+    _dl "$GH_RAW/local-bin/sway-welcome"   "/home/$user/.local/bin/sway-welcome"   1
+    _dl "$GH_RAW/local-bin/sway-power"     "/home/$user/.local/bin/sway-power"     1
+    _dl "$GH_RAW/local-bin/cal-popup"      "/home/$user/.local/bin/cal-popup"      1
+    _dl "$GH_RAW/local-bin/cal-toggle"     "/home/$user/.local/bin/cal-toggle"     1
+    chown -R "$user:$user" "/home/$user/.local/bin"
+
+    echo "  Downloading desktop entries..."
+    mkdir -p "/home/$user/.local/share/applications"
+    _dl "$GH_RAW/local-share-applications/sway-welcome.desktop"   "/home/$user/.local/share/applications/sway-welcome.desktop"
+    _dl "$GH_RAW/local-share-applications/sway-power.desktop"     "/home/$user/.local/share/applications/sway-power.desktop"
+    _dl "$GH_RAW/local-share-applications/sway-first-run.desktop" "/home/$user/.local/share/applications/sway-first-run.desktop"
+    _dl "$GH_RAW/local-share-applications/cal-toggle.desktop"     "/home/$user/.local/share/applications/cal-toggle.desktop"
+    chown -R "$user:$user" "/home/$user/.local/share/applications"
 fi
 
 # Only run inline fallbacks if neither local deploy nor download succeeded
@@ -366,6 +408,15 @@ mouse_warping none
 # Set max render time (helps with Intel iGPU)
 max_render_time 3
 SWAYEOF
+    # Append custom tool exec/bindsym lines (inline heredoc is single-quoted so
+    # we append separately to allow $user expansion)
+    {
+        echo ""
+        echo "# Custom tools"
+        echo "exec /home/$user/.local/bin/sway-first-run"
+        echo "exec /home/$user/.local/bin/sway-welcome"
+        echo "bindsym \$mod+Shift+p exec /home/$user/.local/bin/sway-power"
+    } >> "/home/$user/.config/sway/config"
 fi
 
 # ============================================================================

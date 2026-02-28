@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=First-Run Setup
+Comment=Pull latest configs and dotfiles from GitHub
+Exec=/home/bean/.local/bin/sway-first-run --force
+Icon=system-software-update
+Terminal=false
+Type=Application
+Categories=System;

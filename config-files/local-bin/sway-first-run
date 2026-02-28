@@ -1,0 +1,380 @@
+#!/usr/bin/env python3
+"""sway-first-run — one-shot first-login config + dotfile sync from GitHub."""
+import gi, os, sys, subprocess, threading, urllib.request, urllib.error, stat
+os.environ.setdefault('GDK_BACKEND', 'x11')
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GLib
+
+FLAG      = os.path.expanduser("~/.config/sway-first-run/done")
+HOME      = os.path.expanduser("~")
+CONFIG    = os.path.join(HOME, ".config")
+BIN       = os.path.join(HOME, ".local", "bin")
+USERNAME  = os.environ.get("USER") or os.path.basename(HOME)
+
+BASE_RAW      = "https://raw.githubusercontent.com/BeanGreen247/sway-setup-script/main/config-files"
+DOTFILES_RAW  = "https://raw.githubusercontent.com/BeanGreen247/dotfiles/master"
+
+# ─── Download manifest ───────────────────────────────────────────────────────
+# (display_label, url, local_path, make_executable, patch_username)
+DOWNLOADS = [
+    # sway
+    ("sway / config",           f"{BASE_RAW}/sway/config",                f"{CONFIG}/sway/config",                False, True),
+    ("sway / general_keybinds", f"{BASE_RAW}/sway/general_keybinds",      f"{CONFIG}/sway/general_keybinds",      False, False),
+    ("sway / laptop_keybinds",  f"{BASE_RAW}/sway/laptop_keybinds",       f"{CONFIG}/sway/laptop_keybinds",       False, False),
+    ("sway / desktop_keybinds", f"{BASE_RAW}/sway/desktop_keybinds",      f"{CONFIG}/sway/desktop_keybinds",      False, False),
+    ("sway / env",              f"{BASE_RAW}/sway/env",                   f"{CONFIG}/sway/env",                   False, False),
+    # waybar
+    ("waybar / config",         f"{BASE_RAW}/waybar/config",              f"{CONFIG}/waybar/config",              False, True),
+    ("waybar / style.css",      f"{BASE_RAW}/waybar/style.css",           f"{CONFIG}/waybar/style.css",           False, False),
+    # foot
+    ("foot / foot.ini",         f"{BASE_RAW}/foot/foot.ini",              f"{CONFIG}/foot/foot.ini",              False, False),
+    # swaync
+    ("swaync / config.json",    f"{BASE_RAW}/swaync/config.json",         f"{CONFIG}/swaync/config.json",         False, False),
+    # rofi
+    ("rofi / config.rasi",      f"{BASE_RAW}/rofi/config.rasi",           f"{CONFIG}/rofi/config.rasi",           False, False),
+    ("rofi / midnight.rasi",    f"{BASE_RAW}/rofi/midnight.rasi",         f"{CONFIG}/rofi/midnight.rasi",         False, False),
+    # gtk
+    ("gtk-3.0 / settings.ini",  f"{BASE_RAW}/gtk-3.0/settings.ini",      f"{CONFIG}/gtk-3.0/settings.ini",       False, False),
+    ("gtk-3.0 / gtk.css",       f"{BASE_RAW}/gtk-3.0/gtk.css",           f"{CONFIG}/gtk-3.0/gtk.css",            False, False),
+    # gsimplecal
+    ("gsimplecal / config",     f"{BASE_RAW}/gsimplecal/config",          f"{CONFIG}/gsimplecal/config",          False, False),
+    # local-bin tools
+    ("tool / sway-welcome",     f"{BASE_RAW}/local-bin/sway-welcome",     f"{BIN}/sway-welcome",                  True,  True),
+    ("tool / sway-power",       f"{BASE_RAW}/local-bin/sway-power",       f"{BIN}/sway-power",                    True,  True),
+    ("tool / cal-popup",        f"{BASE_RAW}/local-bin/cal-popup",        f"{BIN}/cal-popup",                     True,  True),
+    ("tool / cal-toggle",       f"{BASE_RAW}/local-bin/cal-toggle",       f"{BIN}/cal-toggle",                    True,  True),
+    # dotfiles
+    (".vimrc",                  f"{DOTFILES_RAW}/vim/vimrc",              f"{HOME}/.vimrc",                       False, False),
+    (".bashrc",                 f"{DOTFILES_RAW}/bashrc/bashrc",          f"{HOME}/.bashrc",                      False, False),
+]
+
+# Exit silently if already run (unless --force passed)
+if os.path.exists(FLAG) and '--force' not in sys.argv:
+    sys.exit(0)
+
+# ─── CSS ─────────────────────────────────────────────────────────────────────
+CSS = b"""
+window {
+    background-color: #0a1628;
+}
+#card {
+    background-color: #0c1222;
+    border: 1px solid rgba(42,90,138,0.65);
+    border-radius: 12px;
+    padding: 28px 32px;
+}
+#title {
+    color: #79c0ff;
+    font-family: "DejaVu Sans Mono";
+    font-size: 18pt;
+    font-weight: bold;
+}
+#subtitle {
+    color: #6a8aaa;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+    margin-top: 2px;
+}
+#section-label {
+    color: #58a6ff;
+    font-family: "DejaVu Sans Mono";
+    font-size: 8pt;
+    font-weight: bold;
+    margin-top: 14px;
+    margin-bottom: 3px;
+}
+#item-label {
+    color: #b0c8e0;
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+}
+#item-status {
+    font-family: "DejaVu Sans Mono";
+    font-size: 9pt;
+    min-width: 22px;
+}
+#status-ok    { color: #3fb950; }
+#status-err   { color: #f85149; }
+#status-wait  { color: #6a8aaa; }
+#status-run   { color: #e3b341; }
+#footer-label {
+    color: #6a8aaa;
+    font-family: "DejaVu Sans Mono";
+    font-size: 8pt;
+    margin-top: 6px;
+}
+progressbar trough {
+    background-color: #1a2a40;
+    border-radius: 4px;
+    min-height: 6px;
+}
+progressbar progress {
+    background-color: #2a5a8a;
+    border-radius: 4px;
+    min-height: 6px;
+}
+button {
+    background-image: none;
+    box-shadow: none;
+    text-shadow: none;
+}
+button#close-btn {
+    background-color: #2a5a8a;
+    background-image: none;
+    color: #dce8f5;
+    border: none;
+    border-radius: 6px;
+    font-family: "DejaVu Sans Mono";
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 7px 28px;
+    min-height: 0;
+    box-shadow: none;
+}
+button#close-btn label { font-weight: bold; color: #dce8f5; }
+button#close-btn:hover { background-color: #3a7abf; background-image: none; }
+button#close-btn:disabled {
+    background-color: #1a2a40;
+    color: #3a5a7a;
+}
+separator {
+    background-color: rgba(42,90,138,0.35);
+    min-height: 1px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+"""
+
+# ─── Group downloads by section ──────────────────────────────────────────────
+_SECTIONS = {
+    "sway":         "Sway Config",
+    "waybar":       "Waybar",
+    "foot":         "Foot Terminal",
+    "swaync":       "Sway Notification Center",
+    "rofi":         "Rofi Launcher",
+    "gtk":          "GTK Theme",
+    "gsimplecal":   "GSImpleCal",
+    "tool":         "Custom Tools  (~/.local/bin)",
+    ".vimrc":       "Dotfiles",
+    ".bashrc":      "Dotfiles",
+}
+
+def _section_key(label):
+    return label.split(" / ")[0].strip()
+
+
+class FirstRunWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
+        self.set_title("First-Run Setup")
+        self.set_default_size(560, 640)
+        self.set_resizable(False)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_decorated(False)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        self.connect("key-press-event", lambda w, e:
+            Gtk.main_quit() if e.keyval == Gdk.KEY_Escape and self._done else None)
+
+        self._done        = False
+        self._row_widgets = {}   # label → (icon_lbl, item_lbl)
+        self._total       = len(DOWNLOADS)
+        self._finished    = 0
+        self._errors      = 0
+
+        # ── outer padding ──────────────────────────────────────────────────
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        outer.set_margin_top(20); outer.set_margin_bottom(20)
+        outer.set_margin_start(20); outer.set_margin_end(20)
+        self.add(outer)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.set_name("card")
+        outer.pack_start(card, True, True, 0)
+
+        # ── header ────────────────────────────────────────────────────────
+        title = Gtk.Label(label="First-Run Setup")
+        title.set_name("title")
+        title.set_halign(Gtk.Align.START)
+        card.pack_start(title, False, False, 0)
+
+        subtitle = Gtk.Label(label="Pulling latest configs & tools from GitHub  •  by BeanGreen247")
+        subtitle.set_name("subtitle")
+        subtitle.set_halign(Gtk.Align.START)
+        card.pack_start(subtitle, False, False, 0)
+
+        card.pack_start(Gtk.Separator(), False, False, 0)
+
+        # ── progress bar ──────────────────────────────────────────────────
+        self._progress = Gtk.ProgressBar()
+        self._progress.set_fraction(0.0)
+        self._progress.set_margin_bottom(8)
+        card.pack_start(self._progress, False, False, 0)
+
+        # ── scrollable item list ──────────────────────────────────────────
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.set_min_content_height(380)
+        card.pack_start(scroll, True, True, 0)
+
+        items_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        items_box.set_margin_top(4)
+        scroll.add(items_box)
+
+        # Group by section
+        last_section = None
+        for (lbl, url, path, exe, patch) in DOWNLOADS:
+            sec = _section_key(lbl)
+            section_title = _SECTIONS.get(sec, sec)
+
+            if section_title != last_section:
+                sec_lbl = Gtk.Label(label=section_title.upper())
+                sec_lbl.set_name("section-label")
+                sec_lbl.set_halign(Gtk.Align.START)
+                items_box.pack_start(sec_lbl, False, False, 0)
+                last_section = section_title
+
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+            row.set_margin_start(8)
+            row.set_margin_bottom(3)
+
+            icon = Gtk.Label(label="·")
+            icon.set_name("item-status")
+            icon.get_style_context().add_class("status-wait")
+            icon.set_xalign(0)
+            row.pack_start(icon, False, False, 0)
+
+            name_lbl = Gtk.Label(label=lbl)
+            name_lbl.set_name("item-label")
+            name_lbl.set_halign(Gtk.Align.START)
+            name_lbl.set_xalign(0)
+            row.pack_start(name_lbl, True, True, 0)
+
+            items_box.pack_start(row, False, False, 0)
+            self._row_widgets[lbl] = (icon, name_lbl)
+
+        # ── separator ─────────────────────────────────────────────────────
+        card.pack_start(Gtk.Separator(), False, False, 0)
+
+        # ── footer row ────────────────────────────────────────────────────
+        bottom = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        card.pack_start(bottom, False, False, 0)
+
+        self._footer = Gtk.Label(label="Starting…")
+        self._footer.set_name("footer-label")
+        self._footer.set_halign(Gtk.Align.START)
+        bottom.pack_start(self._footer, True, True, 0)
+
+        self._close_btn = Gtk.Button(label="Close")
+        self._close_btn.get_child().set_xalign(0.5)
+        self._close_btn.set_name("close-btn")
+        self._close_btn.set_sensitive(False)
+        self._close_btn.connect("clicked", self._on_close)
+        bottom.pack_end(self._close_btn, False, False, 0)
+
+        # start worker thread
+        t = threading.Thread(target=self._worker, daemon=True)
+        t.start()
+
+    # ── helpers (called from worker thread via GLib.idle_add) ─────────────
+
+    def _set_row_state(self, lbl, state):
+        """state: 'run' | 'ok' | 'err'"""
+        icons = {"run": "→", "ok": "✓", "err": "✗"}
+        icon_widget, _ = self._row_widgets[lbl]
+        icon_widget.set_text(icons[state])
+        for cls in ("status-wait", "status-run", "status-ok", "status-err"):
+            icon_widget.get_style_context().remove_class(cls)
+        icon_widget.get_style_context().add_class(f"status-{state}")
+        return False   # GLib.idle_add one-shot
+
+    def _set_footer(self, text):
+        self._footer.set_text(text)
+        return False
+
+    def _advance_progress(self):
+        fraction = self._finished / self._total
+        self._progress.set_fraction(fraction)
+        return False
+
+    def _finish_all(self):
+        self._done = True
+        self._progress.set_fraction(1.0)
+        if self._errors == 0:
+            self._footer.set_text("All done — sway config reloaded.")
+        else:
+            self._footer.set_text(f"Done with {self._errors} error(s) — check internet connection.")
+        self._close_btn.set_sensitive(True)
+
+        # Write flag so this never auto-runs again
+        os.makedirs(os.path.dirname(FLAG), exist_ok=True)
+        open(FLAG, "w").close()
+
+        # Reload sway config in background
+        try:
+            subprocess.Popen(["swaymsg", "reload"],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+        return False
+
+    # ── worker ──────────────────────────────────────────────────────────────
+
+    def _worker(self):
+        for (lbl, url, dst_path, make_exe, patch) in DOWNLOADS:
+            GLib.idle_add(self._set_row_state, lbl, "run")
+            GLib.idle_add(self._set_footer, f"Fetching {lbl} …")
+            ok = self._fetch(url, dst_path, make_exe, patch)
+            self._finished += 1
+            if not ok:
+                self._errors += 1
+            GLib.idle_add(self._set_row_state, lbl, "ok" if ok else "err")
+            GLib.idle_add(self._advance_progress)
+
+        GLib.idle_add(self._finish_all)
+
+    def _fetch(self, url, dst_path, make_exe, patch):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "sway-first-run/1.0"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = resp.read().decode("utf-8", errors="replace")
+        except Exception:
+            return False
+
+        # Strip Windows line-endings
+        data = data.replace("\r\n", "\n").replace("\r", "\n")
+
+        # Patch hardcoded username → current user
+        if patch and USERNAME and USERNAME != "bean":
+            data = data.replace("/home/bean/", f"/home/{USERNAME}/")
+            data = data.replace('"bean"', f'"{USERNAME}"')
+
+        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+        try:
+            with open(dst_path, "w", encoding="utf-8") as f:
+                f.write(data)
+        except Exception:
+            return False
+
+        if make_exe:
+            try:
+                st = os.stat(dst_path)
+                os.chmod(dst_path, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            except Exception:
+                pass
+
+        return True
+
+    def _on_close(self, _btn):
+        Gtk.main_quit()
+
+
+win = FirstRunWindow()
+win.show_all()
+Gtk.main()

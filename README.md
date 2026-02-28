@@ -50,6 +50,9 @@ Three Python GTK3 apps are included in `~/.local/bin/`, all styled with the midn
 
 ## Screenshots
 
+### First time setup
+![First time setup](screenshots/sway-first-time-setup.png)
+
 ### Desktop
 <!-- Add desktop screenshot here -->
 ![Desktop](screenshots/desktop.png)
