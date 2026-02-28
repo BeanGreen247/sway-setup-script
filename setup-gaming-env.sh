@@ -142,10 +142,12 @@ set_env_var "__GL_THREADED_OPTIMIZATIONS" "1"
 set_env_var "__GL_SHADER_DISK_CACHE"    "1"
 set_env_var "__GL_SHADER_DISK_CACHE_PATH" "${GL_CACHE_DIR}"
 
-# Gamemode — LD_PRELOAD with $LIB makes it work for both 64-bit and 32-bit
-# (Wine/Proton) processes without needing separate entries. Requires
-# libgamemodeauto0 + libgamemodeauto0:i386 installed (done above).
-set_env_var "LD_PRELOAD"               "/usr/\$LIB/libgamemodeauto.so.0"
+# NOTE: LD_PRELOAD is intentionally NOT set in /etc/environment.
+# PAM does not perform $LIB shell expansion, so the literal string
+# "/usr/$LIB/libgamemodeauto.so.0" gets preloaded for every process
+# (including login shells / TTY sessions), causing "gamemodeauto:" messages
+# on every login.  Use "gamemoderun %command%" in Steam / Lutris launch
+# options instead — that is the correct per-game invocation path.
 
 # DXVK state cache + async shader compilation
 set_env_var "DXVK_ASYNC"               "1"

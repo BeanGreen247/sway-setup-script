@@ -72,12 +72,12 @@ deploy_dir() {
 
     mkdir -p "$dst"
 
-    # Copy all files except *.backup.*
+    # Copy all files except *.backup.* — strip CRLF on the way
     find "$src" -maxdepth 2 -type f ! -name "*.backup.*" | while read -r f; do
         rel="${f#$src/}"
         dst_file="$dst/$rel"
         mkdir -p "$(dirname "$dst_file")"
-        cp "$f" "$dst_file"
+        sed 's/\r//' "$f" > "$dst_file"
     done
 
     echo -e "  ${GREEN}✓ $name${NC}"
@@ -100,7 +100,7 @@ LOCAL_BIN_DST="$TARGET_HOME/.local/bin"
 if [ -d "$LOCAL_BIN_SRC" ]; then
     mkdir -p "$LOCAL_BIN_DST"
     for f in "$LOCAL_BIN_SRC"/*; do
-        cp "$f" "$LOCAL_BIN_DST/$(basename "$f")"
+        sed 's/\r//' "$f" > "$LOCAL_BIN_DST/$(basename "$f")"
         chmod +x "$LOCAL_BIN_DST/$(basename "$f")"
     done
     chown -R "$TARGET_USER:$TARGET_USER" "$LOCAL_BIN_DST"
@@ -130,12 +130,39 @@ DESKTOP_DST="$TARGET_HOME/.local/share/applications"
 if [ -d "$DESKTOP_SRC" ]; then
     mkdir -p "$DESKTOP_DST"
     for f in "$DESKTOP_SRC"/*.desktop; do
-        cp "$f" "$DESKTOP_DST/$(basename "$f")"
+        sed 's/\r//' "$f" > "$DESKTOP_DST/$(basename "$f")"
         sed -i "s|/home/bean/|/home/$TARGET_USER/|g" "$DESKTOP_DST/$(basename "$f")"
     done
     chown -R "$TARGET_USER:$TARGET_USER" "$DESKTOP_DST"
     echo -e "  ${GREEN}✓ desktop entries${NC}"
 fi
+
+# ─── Deploy home dotfiles (.bashrc, .vimrc) from GitHub dotfiles ─────────────
+DOTFILES_BASHRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/bashrc/bashrc"
+DOTFILES_VIMRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/vim/vimrc"
+
+echo "Deploying home dotfiles:"
+
+fetch_dotfile() {
+    local url="$1"
+    local dst="$2"
+    local name="$(basename "$dst")"
+
+    if [ -f "$dst" ]; then
+        cp "$dst" "${dst}.backup.$TIMESTAMP"
+        echo -e "  Backed up existing $name"
+    fi
+
+    if curl -fsSL --connect-timeout 10 "$url" | sed 's/\r//' > "$dst" 2>/dev/null && [ -s "$dst" ]; then
+        chown "$TARGET_USER:$TARGET_USER" "$dst"
+        echo -e "  ${GREEN}✓ $name (from GitHub)${NC}"
+    else
+        echo -e "  ${RED}✗ $name — could not fetch from GitHub (check internet connection)${NC}"
+    fi
+}
+
+fetch_dotfile "$DOTFILES_BASHRC" "$TARGET_HOME/.bashrc"
+fetch_dotfile "$DOTFILES_VIMRC"  "$TARGET_HOME/.vimrc"
 
 # ─── Fix permissions ─────────────────────────────────────────────────────────
 chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_CONFIG"
