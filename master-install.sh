@@ -22,6 +22,7 @@ SOURCES_SCRIPT="sources_list_setup.sh"
 MAIN_SCRIPT="sway-minimal-install.sh"
 TWEAKS_SCRIPT="sway-post-install-tweaks.sh"
 DEPLOY_SCRIPT="deploy-configs.sh"
+GAMING_SCRIPT="setup-gaming-env.sh"
 
 echo -e "${BLUE}"
 cat << 'EOF'
@@ -124,6 +125,7 @@ find_and_copy_script "$SOURCES_SCRIPT" || echo "Note: $SOURCES_SCRIPT will be em
 find_and_copy_script "$MAIN_SCRIPT"    || echo "Warning: $MAIN_SCRIPT not found locally"
 find_and_copy_script "$TWEAKS_SCRIPT"  || echo "Note: $TWEAKS_SCRIPT not available"
 find_and_copy_script "$DEPLOY_SCRIPT"  || echo "Note: $DEPLOY_SCRIPT not found (configs will use fallbacks)"
+find_and_copy_script "$GAMING_SCRIPT"  || echo "Note: $GAMING_SCRIPT not found (gaming setup will be skipped)"
 find_and_copy_dir "config-files"       || echo "Note: config-files/ not found (configs will use fallbacks)"
 
 ################################################################################
@@ -211,6 +213,26 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     fi
 else
     echo "Skipping post-install tweaks..."
+fi
+
+################################################################################
+# STEP 5: Gaming Environment Setup (Optional)
+################################################################################
+echo ""
+echo -e "${BLUE}[5/5] Gaming environment setup (shader cache + gamemode)...${NC}"
+echo ""
+
+read -p "Set up gaming optimizations (shader cache dirs, /etc/environment, gamemode multiarch)? [y/N]: " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [ -f "$GAMING_SCRIPT" ]; then
+        chmod +x "$GAMING_SCRIPT"
+        bash "$GAMING_SCRIPT"
+    else
+        echo -e "${YELLOW}Warning: $GAMING_SCRIPT not found, skipping gaming setup...${NC}"
+    fi
+else
+    echo "Skipping gaming setup..."
 fi
 
 ################################################################################

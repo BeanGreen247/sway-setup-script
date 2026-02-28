@@ -198,22 +198,51 @@ EOF
 fi
 
 # ============================================================================
-# CREATE USEFUL ALIASES
+# INSTALL DOTFILES FROM GITHUB
 # ============================================================================
-cat >> "/home/$user/.bashrc" << 'EOF'
+echo ""
+echo "Installing dotfiles from BeanGreen247/dotfiles…"
 
-# Sway-specific aliases
-alias ll='ls -alh'
-alias update='sudo apt update && sudo apt upgrade -y'
-alias clean='sudo apt autoremove -y && sudo apt autoclean'
-alias sway-reload='swaymsg reload'
-alias sway-logs='journalctl -b -xe --user -u sway'
-alias gpu-info='glxinfo | grep -i "renderer\|version"'
-alias mem-usage='ps aux --sort=-%mem | head -20'
-alias cpu-usage='ps aux --sort=-%cpu | head -20'
-EOF
+DOTFILES_BASHRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/bashrc/bashrc"
+DOTFILES_VIMRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/vim/vimrc"
 
-chown "$user:$user" "/home/$user/.bashrc"
+# --- bashrc ---
+echo "  Pulling ~/.bashrc…"
+if curl -fsSL "${DOTFILES_BASHRC}" -o "/home/${user}/.bashrc"; then
+    chown "${user}:${user}" "/home/${user}/.bashrc"
+    echo "  ✓ ~/.bashrc installed"
+else
+    echo "  ✗ Failed to pull bashrc — check internet connection"
+fi
+
+# --- vim + vimrc ---
+echo "  Installing vim…"
+apt-get install -y vim curl
+
+echo "  Pulling ~/.vimrc…"
+if curl -fsSL "${DOTFILES_VIMRC}" -o "/home/${user}/.vimrc"; then
+    chown "${user}:${user}" "/home/${user}/.vimrc"
+    echo "  ✓ ~/.vimrc installed"
+else
+    echo "  ✗ Failed to pull vimrc — check internet connection"
+fi
+
+# Create vim runtime directories expected by the vimrc
+for vimdir in "/home/${user}/.vim/undo" "/home/${user}/.vim/backup" "/home/${user}/.vim/swap" "/home/${user}/.vim/autoload"; do
+    mkdir -p "${vimdir}"
+done
+chown -R "${user}:${user}" "/home/${user}/.vim"
+
+# Bootstrap vim-plug (the vimrc uses it and auto-installs it on first launch,
+# but pre-installing avoids the curl call happening inside Vim)
+echo "  Bootstrapping vim-plug…"
+if curl -fsSLo "/home/${user}/.vim/autoload/plug.vim" --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim; then
+    chown "${user}:${user}" "/home/${user}/.vim/autoload/plug.vim"
+    echo "  ✓ vim-plug installed — run :PlugInstall inside Vim to install plugins"
+else
+    echo "  ✗ Failed to bootstrap vim-plug"
+fi
 
 # ============================================================================
 # SET PERMISSIONS

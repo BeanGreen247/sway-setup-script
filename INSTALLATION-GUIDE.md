@@ -377,7 +377,7 @@ sudo apt autoremove -y
 - Clipboard manager
 - GTK themes
 - Firewall (UFW)
-- ZSH + Oh-My-Zsh
+- Bash with dotfiles from [BeanGreen247/dotfiles](https://github.com/BeanGreen247/dotfiles)
 - Intel GPU monitoring
 
 ---

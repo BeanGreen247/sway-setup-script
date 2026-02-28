@@ -194,7 +194,7 @@ After reboot, Sway will auto-start when you log in on TTY1.
 - Clipboard manager (cliphist)
 - GTK themes (Arc Dark + Papirus icons)
 - UFW firewall
-- ZSH + Oh-My-Zsh
+- Bash with dotfiles from [BeanGreen247/dotfiles](https://github.com/BeanGreen247/dotfiles)
 - Intel GPU monitoring script
 
 **When to run**: After main installation, customize as needed
