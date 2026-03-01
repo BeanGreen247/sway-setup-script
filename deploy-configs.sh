@@ -165,6 +165,12 @@ fetch_dotfile() {
 fetch_dotfile "$DOTFILES_BASHRC" "$TARGET_HOME/.bashrc"
 fetch_dotfile "$DOTFILES_VIMRC"  "$TARGET_HOME/.vimrc"
 
+# Deploy vim colorscheme
+DOTFILES_VIM_COLORS="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/vim/colors/midnight.vim"
+mkdir -p "$TARGET_HOME/.vim/colors"
+chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.vim" "$TARGET_HOME/.vim/colors"
+fetch_dotfile "$DOTFILES_VIM_COLORS" "$TARGET_HOME/.vim/colors/midnight.vim"
+
 # ─── Fix permissions ─────────────────────────────────────────────────────────
 chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_CONFIG"
 echo ""

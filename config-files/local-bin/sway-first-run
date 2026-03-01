@@ -45,6 +45,7 @@ DOWNLOADS = [
     ("tool / cal-toggle",       f"{BASE_RAW}/local-bin/cal-toggle",       f"{BIN}/cal-toggle",                    True,  True),
     # dotfiles
     (".vimrc",                  f"{DOTFILES_RAW}/vim/vimrc",              f"{HOME}/.vimrc",                       False, False),
+    ("vim / midnight.vim",      f"{DOTFILES_RAW}/vim/colors/midnight.vim",f"{HOME}/.vim/colors/midnight.vim",     False, False),
     (".bashrc",                 f"{DOTFILES_RAW}/bashrc/bashrc",          f"{HOME}/.bashrc",                      False, False),
 ]
 
@@ -156,6 +157,7 @@ _SECTIONS = {
     "gsimplecal":   "GSImpleCal",
     "tool":         "Custom Tools  (~/.local/bin)",
     ".vimrc":       "Dotfiles",
+    "vim":          "Dotfiles",
     ".bashrc":      "Dotfiles",
 }
 
