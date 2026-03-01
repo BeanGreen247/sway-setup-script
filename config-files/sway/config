@@ -18,10 +18,15 @@ include /etc/sway/config-vars.d/*
 # Source env file and propagate to systemd user session + dbus so every
 # app launched by sway (or systemd --user) inherits these variables.
 # gsettings covers libadwaita/GNOME apps that ignore GTK_THEME.
+# color-scheme tells the xdg-desktop-portal (and all portal-aware apps like
+# Firefox, Electron, libadwaita) that we want dark mode.
+# gtk-application-prefer-dark-theme covers older GTK3 apps.
 exec_always sh -c 'set -a; . $HOME/.config/sway/env; set +a; \
     systemctl --user import-environment GTK_THEME XDG_CURRENT_DESKTOP XDG_SESSION_TYPE; \
     dbus-update-activation-environment --systemd GTK_THEME XDG_CURRENT_DESKTOP; \
-    gsettings set org.gnome.desktop.interface gtk-theme "Midnight-Blue"'
+    gsettings set org.gnome.desktop.interface gtk-theme "Midnight-Blue"; \
+    gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"; \
+    gsettings set org.gnome.desktop.interface gtk-application-prefer-dark-theme true'
 
 ### Output configuration
 # No wallpaper for performance - solid midnight blue
