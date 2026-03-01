@@ -14,6 +14,15 @@ set $menu rofi -show drun
 
 include /etc/sway/config-vars.d/*
 
+### Environment
+# Source env file and propagate to systemd user session + dbus so every
+# app launched by sway (or systemd --user) inherits these variables.
+# gsettings covers libadwaita/GNOME apps that ignore GTK_THEME.
+exec_always sh -c 'set -a; . $HOME/.config/sway/env; set +a; \
+    systemctl --user import-environment GTK_THEME XDG_CURRENT_DESKTOP XDG_SESSION_TYPE; \
+    dbus-update-activation-environment --systemd GTK_THEME XDG_CURRENT_DESKTOP; \
+    gsettings set org.gnome.desktop.interface gtk-theme "Midnight-Blue"'
+
 ### Output configuration
 # No wallpaper for performance - solid midnight blue
 output * bg #0a1628 solid_color

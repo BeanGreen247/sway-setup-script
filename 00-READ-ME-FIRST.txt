@@ -105,7 +105,7 @@ WHAT GETS INSTALLED
      Optimized kernel parameters
 
   UTILITIES:
-     PCManFM (file manager)
+     Thunar (file manager)
      Firefox ESR
      Grim + Slurp (screenshots)
      Brightnessctl (backlight)

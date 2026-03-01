@@ -63,7 +63,8 @@ apt install -y \
     libgl1:i386 libgl1-mesa-dri:i386 libglu1-mesa:i386 \
     \
     brightnessctl pavucontrol pulseaudio-utils pamixer lxappearance \
-    pcmanfm xarchiver p7zip-full unzip curl wget \
+    libglib2.0-bin \
+    thunar thunar-archive-plugin thunar-volman xarchiver p7zip-full unzip curl wget \
     firefox-esr chromium \
     \
     arc-theme papirus-icon-theme \
@@ -946,7 +947,7 @@ cat << 'EOF'
 ╠═══════════════════════════════════════════════════════════════════════════╣
 ║  Installed Applications:                                                  ║
 ║    • Firefox ESR (web browser)                                            ║
-║    • PCManFM (file manager)                                               ║
+║    • Thunar (file manager)                                               ║
 ║    • Pavucontrol (audio mixer)                                            ║
 ║    • MangoHud/Goverlay (gaming overlay)                                   ║
 ║    • GameMode (gaming performance)                                        ║

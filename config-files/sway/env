@@ -1,5 +1,6 @@
 # Environment variables for Sway
 export XDG_CURRENT_DESKTOP=sway
+export GTK_THEME=Midnight-Blue
 export XDG_SESSION_TYPE=wayland
 export MOZ_ENABLE_WAYLAND=1
 export QT_QPA_PLATFORM=wayland

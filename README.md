@@ -23,7 +23,7 @@ Three Python GTK3 apps are included in `~/.local/bin/`, all styled with the midn
 - **`cal-popup`** — GTK calendar popup launched by clicking the waybar clock. Closes on focus-out or Escape. Wrapped by `cal-toggle` which prevents duplicate windows.
 
 ### System Tools
-- **PCManFM** - Lightweight file manager
+- **Thunar** - File manager (GTK, integrates with the Midnight-Blue theme)
 - **Pavucontrol** - Audio mixer GUI
 - **Grim + Slurp** - Screenshot tools
 - **Brightnessctl** - Backlight control

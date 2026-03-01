@@ -90,6 +90,7 @@ deploy_dir waybar
 deploy_dir foot
 deploy_dir swaync
 deploy_dir gtk-3.0
+deploy_dir gtk-4.0
 deploy_dir rofi
 deploy_dir gsimplecal
 

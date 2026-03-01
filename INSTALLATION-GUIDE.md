@@ -130,7 +130,7 @@ sudo bash master-install.sh
 - PipeWire (audio)
 
 ### System Utilities
-- PCManFM (file manager)
+- Thunar (file manager)
 - Firefox ESR (browser)
 - Grim + Slurp (screenshots)
 - Pavucontrol (audio mixer)
@@ -265,7 +265,7 @@ lxappearance
 Edit `~/.config/sway/config`:
 ```bash
 bindsym $mod+b exec firefox
-bindsym $mod+f exec pcmanfm
+bindsym $mod+f exec thunar
 ```
 
 Then reload: `swaymsg reload`

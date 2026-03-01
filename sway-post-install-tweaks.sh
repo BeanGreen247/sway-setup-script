@@ -233,6 +233,42 @@ EOF
 fi
 
 # ============================================================================
+# THEME: Midnight-Blue GTK Theme
+# Custom maintained theme: https://github.com/BeanGreen247/catppuccin-midnight-gtk
+# Patched from Catppuccin Mocha Blue; maps purple-grey → midnight navy/blue
+# to match sway/waybar/rofi palette in this setup.
+# ============================================================================
+read -p "Install Midnight-Blue GTK theme? [y/N]: " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    apt install -y curl tar
+
+    THEME_URL="https://github.com/BeanGreen247/catppuccin-midnight-gtk/releases/latest/download/Midnight-Blue.tar.gz"
+    THEME_DEST="/usr/share/themes/Midnight-Blue"
+    TMP_DIR="$(mktemp -d)"
+
+    echo "  Downloading Midnight-Blue from github.com/BeanGreen247/catppuccin-midnight-gtk..."
+    if curl -fsSL "$THEME_URL" -o "$TMP_DIR/Midnight-Blue.tar.gz"; then
+        rm -rf "$THEME_DEST"
+        tar -xzf "$TMP_DIR/Midnight-Blue.tar.gz" -C /usr/share/themes/
+
+        # Update gtk settings to use the new theme
+        mkdir -p "/home/$user/.config/gtk-3.0"
+        sed -i 's/^gtk-theme-name=.*/gtk-theme-name=Midnight-Blue/' \
+            "/home/$user/.config/gtk-3.0/settings.ini" 2>/dev/null || true
+
+        chown -R "$user:$user" "/home/$user/.config/gtk-3.0"
+        rm -rf "$TMP_DIR"
+        echo "✓ Midnight-Blue theme installed → $THEME_DEST"
+        echo "  Select it in lxappearance under Widget > Midnight-Blue"
+    else
+        echo "⚠ Download failed — push a release to github.com/BeanGreen247/catppuccin-midnight-gtk first"
+        echo "  Build manually: cd ~/catppuccin-midnight-gtk && sudo bash build.sh --install"
+        rm -rf "$TMP_DIR"
+    fi
+fi
+
+# ============================================================================
 # SECURITY: Enable firewall
 # ============================================================================
 read -p "Enable UFW firewall? [y/N]: " -n 1 -r
