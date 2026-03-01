@@ -94,6 +94,79 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # ============================================================================
+# PERFORMANCE: zram Setup (compressed RAM swap)
+# ============================================================================
+echo -e "\e[1;31m[Setting up zram...]\e[1;0m\n"
+
+# Install systemd zram generator if not present
+if ! dpkg -l systemd-zram-generator &>/dev/null; then
+    apt install -y systemd-zram-generator
+fi
+
+# Detect total RAM in MB
+ram_mb=$(awk '/MemTotal/ {printf "%.0f", $2/1024}' /proc/meminfo)
+
+# Calculate zram size based on RAM amount
+if [ "$ram_mb" -lt 8192 ]; then
+    # < 8 GB: 2x RAM
+    zram_mb=$((ram_mb * 2))
+    zram_rule="< 8 GB → 2×"
+elif [ "$ram_mb" -lt 16384 ]; then
+    # 8–15 GB: 1x RAM
+    zram_mb=$ram_mb
+    zram_rule="8–15 GB → 1×"
+elif [ "$ram_mb" -lt 32768 ]; then
+    # 16–31 GB: 0.75x RAM
+    zram_mb=$((ram_mb * 3 / 4))
+    zram_rule="16–31 GB → 0.75×"
+elif [ "$ram_mb" -lt 65536 ]; then
+    # 32–63 GB: 0.5x RAM
+    zram_mb=$((ram_mb / 2))
+    zram_rule="32–63 GB → 0.5×"
+elif [ "$ram_mb" -lt 262144 ]; then
+    # 64–255 GB: 0.25x RAM
+    zram_mb=$((ram_mb / 4))
+    zram_rule="64–255 GB → 0.25×"
+else
+    # >= 256 GB: 0.125x RAM
+    zram_mb=$((ram_mb / 8))
+    zram_rule=">= 256 GB → 0.125×"
+fi
+
+# Apply 4 GB minimum floor
+min_zram_mb=4096
+if [ "$zram_mb" -lt "$min_zram_mb" ]; then
+    zram_mb=$min_zram_mb
+    zram_rule="${zram_rule} (floored to 4 GB minimum)"
+fi
+
+echo "  Detected RAM : ${ram_mb} MB"
+echo "  Rule applied : ${zram_rule}"
+echo "  zram size    : ${zram_mb} MB"
+
+# Write zram-generator config
+tee /usr/lib/systemd/zram-generator.conf > /dev/null << EOF
+# This config file enables a /dev/zram0 device.
+# Size is calculated from host RAM (minimum 4 GB):
+#   < 8 GB    → 2x RAM  (min 4 GB)
+#   8–15 GB   → 1x RAM
+#   16–31 GB  → 0.75x RAM
+#   32–63 GB  → 0.5x RAM
+#   64–255 GB → 0.25x RAM
+#   >= 256 GB → 0.125x RAM
+# To disable, uninstall systemd-zram-generator or create an empty
+# /etc/systemd/zram-generator.conf file.
+[zram0]
+zram-size = min(ram, ${zram_mb})
+EOF
+
+systemctl daemon-reload
+systemctl start dev-zram0.swap
+zramctl
+
+echo -e "Setting up zram...\e[1;32m[DONE]\e[1;0m\n"
+
+# ============================================================================
 # OPTIONAL: Enable Night Light (Wayland gamma control)
 # ============================================================================
 read -p "Install wlsunset (auto night light)? [y/N]: " -n 1 -r
@@ -195,53 +268,6 @@ sensors | grep -i "core\|package"
 EOF
     chmod +x /usr/local/bin/gpu-stats
     echo "✓ Run 'gpu-stats' to monitor Intel GPU"
-fi
-
-# ============================================================================
-# INSTALL DOTFILES FROM GITHUB
-# ============================================================================
-echo ""
-echo "Installing dotfiles from BeanGreen247/dotfiles…"
-
-DOTFILES_BASHRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/bashrc/bashrc"
-DOTFILES_VIMRC="https://raw.githubusercontent.com/BeanGreen247/dotfiles/master/vim/vimrc"
-
-# --- bashrc ---
-echo "  Pulling ~/.bashrc…"
-if curl -fsSL "${DOTFILES_BASHRC}" -o "/home/${user}/.bashrc"; then
-    chown "${user}:${user}" "/home/${user}/.bashrc"
-    echo "  ✓ ~/.bashrc installed"
-else
-    echo "  ✗ Failed to pull bashrc — check internet connection"
-fi
-
-# --- vim + vimrc ---
-echo "  Installing vim…"
-apt-get install -y vim curl
-
-echo "  Pulling ~/.vimrc…"
-if curl -fsSL "${DOTFILES_VIMRC}" -o "/home/${user}/.vimrc"; then
-    chown "${user}:${user}" "/home/${user}/.vimrc"
-    echo "  ✓ ~/.vimrc installed"
-else
-    echo "  ✗ Failed to pull vimrc — check internet connection"
-fi
-
-# Create vim runtime directories expected by the vimrc
-for vimdir in "/home/${user}/.vim/undo" "/home/${user}/.vim/backup" "/home/${user}/.vim/swap" "/home/${user}/.vim/autoload"; do
-    mkdir -p "${vimdir}"
-done
-chown -R "${user}:${user}" "/home/${user}/.vim"
-
-# Bootstrap vim-plug (the vimrc uses it and auto-installs it on first launch,
-# but pre-installing avoids the curl call happening inside Vim)
-echo "  Bootstrapping vim-plug…"
-if curl -fsSLo "/home/${user}/.vim/autoload/plug.vim" --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim; then
-    chown "${user}:${user}" "/home/${user}/.vim/autoload/plug.vim"
-    echo "  ✓ vim-plug installed — run :PlugInstall inside Vim to install plugins"
-else
-    echo "  ✗ Failed to bootstrap vim-plug"
 fi
 
 # ============================================================================

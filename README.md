@@ -191,14 +191,16 @@ After reboot, Sway will auto-start when you log in on TTY1.
 - Development tools (VSCode, Docker, Node.js)
 - CPU governor optimization
 - Swappiness tuning (recommended: 10 with 40GB RAM)
+- **zram compressed swap** — automatically sized based on detected RAM (see below)
 - Steam installation
 - Lutris + Wine (for Windows games)
 - Night light (wlsunset)
 - Clipboard manager (cliphist)
 - GTK themes (Arc Dark + Papirus icons)
 - UFW firewall
-- Bash with dotfiles from [BeanGreen247/dotfiles](https://github.com/BeanGreen247/dotfiles)
 - Intel GPU monitoring script
+
+> **Note**: `.bashrc` and `.vimrc` are no longer applied by this script — they are deployed automatically by the dotfiles tool on first login.
 
 **When to run**: After main installation, customize as needed
 
@@ -234,7 +236,26 @@ mouse_warping none             # Prevents unnecessary cursor updates
 max_render_time 3              # Limits frame time for Intel iGPU
 ```
 
-### 5. Font Caching
+### 5. zram Compressed Swap
+**Why**: zram creates a compressed block device in RAM used as swap. Compression ratios of 3:1 are common, effectively giving you more usable memory without touching disk. This is especially useful on systems with ≤8 GB RAM.
+
+**Sizing logic** (auto-detected at install time):
+
+| Host RAM | Multiplier | Min floor |
+|----------|------------|-----------|
+| < 8 GB | 2× | 4 GB |
+| 8–15 GB | 1× | — |
+| 16–31 GB | 0.75× | — |
+| 32–63 GB | 0.5× | — |
+| 64–255 GB | 0.25× | — |
+| ≥ 256 GB | 0.125× | — |
+
+**Config written to**: `/usr/lib/systemd/zram-generator.conf`  
+**Benefit**: Reduces disk swap usage, improves responsiveness under memory pressure, negligible CPU overhead on modern hardware
+
+---
+
+### 6. Font Caching
 - Downloads latest Font Awesome (with fallback to system package)
 - Rebuilds font cache after installation
 - Uses DejaVu Sans Mono (lightweight, clean)
@@ -506,7 +527,7 @@ Font:        DejaVu Sans Mono 12
 ---
 
 **Created**: February 2026  
-**Last Updated**: February 2026  
+**Last Updated**: March 2026  
 **Tested on**: Debian 13 (Trixie)  
 **Target Hardware**: Intel i5-6500T (HD 530), 40GB RAM, 1TB HDD
 
